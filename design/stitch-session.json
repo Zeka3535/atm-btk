@@ -1,0 +1,19 @@
+{
+    "detailTabs":  {
+                       "DetailDslam":  "b5b79dc42c15432aa04340c7bf300c71",
+                       "DetailHistory":  "51aa267df5354085989cb8c72391f527",
+                       "DetailSecondary":  "f2fac92d9919433c84c00dff229b19cd",
+                       "DetailHuawei":  "ac9bb96b5eb94721bb0b08be05988556",
+                       "DetailServices":  "33af894bf0544476bdef5ca8ab4d9449"
+                   },
+    "modals":  {
+                   "ModalReport":  "0cc3b9547e0f4807b733718cff8c09ed",
+                   "ModalMaps":  "223a5d897c174271ba850208934abf90",
+                   "ModalContacts":  "b596c4143bc849c59c125f0f4c4ca89c",
+                   "ModalWifi":  "f099a3b1da9b400b81c01138ee6c875a"
+               },
+    "modalMaps":  "223a5d897c174271ba850208934abf90",
+    "projectUrl":  "https://stitch.withgoogle.com/projects/786355720389804835",
+    "projectId":  "786355720389804835",
+    "designSystem":  "assets/16058079710893854729"
+}

@@ -1,0 +1,18 @@
+﻿
+
+=== login-inbox ===
+OK: Inbox (Interactive), Login (Interactive)
+
+=== closed-settings ===
+OK: Settings (Interactive), Closed Tasks (Interactive)
+
+=== detail-tabs ===
+OK: DetailServices (Interactive), DetailHistory (Interactive), DetailHuawei (Interactive), DetailSecondary (Interactive)
+
+=== modals ===
+OK: ModalContacts (Interactive), ModalReport (Interactive), ModalMaps (Interactive), ModalWifi (Interactive)
+
+=== dslam ===
+OK: DetailDslam (Interactive)
+
+DONE
