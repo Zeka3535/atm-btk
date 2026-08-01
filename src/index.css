@@ -1954,6 +1954,13 @@ html.modal-open .oneui-statusbar {
   filter: none !important;
 }
 
+/* Без нижних скруглений — иначе в углах видна светлая подложка списка */
+html.modal-open .toolbar,
+html.modal-open .app-shell:has(.toolbar) .toolbar {
+  border-radius: 0;
+  box-shadow: none;
+}
+
 /*
  * Размываем только контент под тулбаром.
  * Статус-бар One UI и .toolbar не трогаем.
