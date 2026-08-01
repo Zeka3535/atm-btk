@@ -152,13 +152,13 @@ html {
   }
 
   /*
-   * Логический экран 412×915 (как современные Samsung Galaxy / Pixel),
+   * Логический экран 390×844 (как современные смартфоны),
    * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
    */
   .device-phone.device-samsung {
-    --screen-w: 412px;
-    --screen-h: 915px;
-    --ui-scale: 0.75;
+    --screen-w: 390px;
+    --screen-h: 844px;
+    --ui-scale: 0.8;
     --device-radius: 38px;
     --device-bezel: 9px;
     --clip-w: calc(var(--screen-w) * var(--ui-scale));
