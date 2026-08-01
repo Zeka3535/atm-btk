@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  dismissInstallPrompt,
-  isInstallDismissed,
   isIosDevice,
   isPwaStandalone,
-  markInstallAccepted,
   type BeforeInstallPromptEventLike,
 } from '../lib/pwa'
 
@@ -14,14 +11,13 @@ export function PwaInstallBanner() {
   const [visible, setVisible] = useState(false)
   const [iosHint, setIosHint] = useState(false)
 
-  const hide = useCallback((permanent = false) => {
-    dismissInstallPrompt(permanent)
+  const hide = useCallback(() => {
     setVisible(false)
     setDeferred(null)
   }, [])
 
   useEffect(() => {
-    if (isPwaStandalone() || isInstallDismissed()) return
+    if (isPwaStandalone()) return
 
     const onBip = (e: Event) => {
       e.preventDefault()
@@ -31,7 +27,6 @@ export function PwaInstallBanner() {
     }
 
     const onInstalled = () => {
-      markInstallAccepted()
       setVisible(false)
       setDeferred(null)
     }
@@ -57,13 +52,9 @@ export function PwaInstallBanner() {
     try {
       await deferred.prompt()
       const { outcome } = await deferred.userChoice
-      if (outcome === 'accepted') {
-        markInstallAccepted()
-      } else {
-        dismissInstallPrompt(false)
-      }
+      if (outcome !== 'accepted') hide()
     } catch {
-      dismissInstallPrompt(false)
+      hide()
     }
     setVisible(false)
     setDeferred(null)
@@ -97,7 +88,7 @@ export function PwaInstallBanner() {
         <button
           type="button"
           className="pwa-install-later"
-          onClick={() => hide(false)}
+          onClick={hide}
           aria-label="Позже"
         >
           Позже

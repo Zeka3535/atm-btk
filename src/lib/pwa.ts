@@ -2,9 +2,6 @@
 
 export const PWA_THEME = '#663479'
 
-const DISMISS_KEY = 'atm_pwa_install_dismiss'
-const DISMISS_DAYS = 14
-
 export type BeforeInstallPromptEventLike = Event & {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
@@ -56,23 +53,6 @@ export function isPwaStandalone(): boolean {
 
 export function isIosDevice(): boolean {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
-}
-
-export function isInstallDismissed(): boolean {
-  const raw = localStorage.getItem(DISMISS_KEY)
-  if (!raw) return false
-  if (raw === '1' || raw === 'installed') return true
-  const ts = Number(raw)
-  if (!Number.isFinite(ts)) return false
-  return Date.now() - ts < DISMISS_DAYS * 24 * 60 * 60 * 1000
-}
-
-export function dismissInstallPrompt(permanent = false) {
-  localStorage.setItem(DISMISS_KEY, permanent ? '1' : String(Date.now()))
-}
-
-export function markInstallAccepted() {
-  localStorage.setItem(DISMISS_KEY, 'installed')
 }
 
 async function lockPortrait() {

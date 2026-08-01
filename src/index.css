@@ -738,11 +738,11 @@ button {
   z-index: 46;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 12px 12px 14px;
+  gap: 8px;
+  padding: 8px 10px;
   background: var(--btk-surface);
   border: 1px solid rgba(209, 201, 214, 0.55);
-  border-radius: 18px;
+  border-radius: 15px;
   box-shadow: var(--btk-shadow-lg);
   box-sizing: border-box;
   animation: btk-snack-in 0.22s ease-out both;
@@ -754,9 +754,9 @@ button {
 }
 
 .pwa-install-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   flex-shrink: 0;
   object-fit: cover;
   background: #efe8f4;
@@ -769,31 +769,31 @@ button {
 
 .pwa-install-text strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--btk-primary);
-  line-height: 1.25;
+  line-height: 1.15;
 }
 
 .pwa-install-text p {
-  margin: 3px 0 0;
-  font-size: 0.78rem;
-  line-height: 1.35;
+  margin: 2px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.2;
   color: var(--btk-muted);
 }
 
 .pwa-install-actions {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .pwa-install-btn {
   margin: 0;
-  padding: 8px 14px;
-  font-size: 0.82rem;
+  padding: 6px 9px;
+  font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
   background: var(--btk-primary);
@@ -805,10 +805,18 @@ button {
   border: none;
   background: transparent;
   color: var(--btk-muted);
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  padding: 4px 8px;
+  padding: 4px 2px;
   cursor: pointer;
+}
+
+/* В макете смартфона баннер привязан к границам логического экрана. */
+.device-samsung .pwa-install-banner {
+  left: 12px;
+  right: 12px;
+  width: auto;
+  margin: 0;
 }
 
 .bottom-nav {
