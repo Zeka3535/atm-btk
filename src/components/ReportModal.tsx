@@ -13,7 +13,7 @@ const ZONES = [
   'станционное оборудование с абонкомплектами',
   'Прочее',
 ]
-const MAX = 506
+const MAX = 500
 
 interface Props {
   taskId: string | null
