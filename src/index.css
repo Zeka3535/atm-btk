@@ -158,23 +158,23 @@ html {
   .device-phone.device-samsung {
     --screen-w: 390px;
     --screen-h: 844px;
-    --ui-scale: 0.8;
+    /* 1:1 — любой zoom/transform на экране убивает backdrop-filter у острова и вкладок */
+    --ui-scale: 1;
     --device-radius: 38px;
     --device-bezel: 9px;
-    --clip-w: calc(var(--screen-w) * var(--ui-scale));
-    --clip-h: calc(var(--screen-h) * var(--ui-scale));
+    --clip-w: var(--screen-w);
+    --clip-h: var(--screen-h);
     position: relative;
     width: calc(var(--clip-w) + var(--device-bezel) * 2);
     height: calc(var(--clip-h) + var(--device-bezel) * 2);
     max-height: calc(100dvh - 40px);
     min-height: 0;
     flex-shrink: 0;
-    /* Если не влезает по высоте — пропорционально уменьшаем весь макет */
+    /* Только внешний zoom макета, когда не влезает по высоте окна */
     zoom: min(
       1,
       calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
     );
-    /* Без filter: — иначе у потомков ломается backdrop-filter (остров/вкладки) */
   }
 
   .device-samsung .device-bezel {
@@ -226,13 +226,11 @@ html {
     position: absolute;
     top: 0;
     left: 0;
-    width: var(--screen-w);
-    height: var(--screen-h);
+    width: 100%;
+    height: 100%;
     min-height: 0;
     border-radius: 0;
     overflow: hidden;
-    /* zoom вместо transform:scale — иначе backdrop-filter у острова/вкладок не работает */
-    zoom: var(--ui-scale);
     background: var(--btk-status);
   }
 
@@ -1371,12 +1369,12 @@ button {
 .detail-sticky-chrome {
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   z-index: 50;
   width: min(var(--app-max), 100%);
   max-width: 100%;
-  margin: 0;
+  margin-inline: auto;
   padding-bottom: 0;
   background: transparent;
   box-shadow: none;
@@ -1494,7 +1492,7 @@ button {
   gap: 12px;
   width: min(var(--app-max), 100%);
   max-width: 100%;
-  margin: 0;
+  margin-inline: auto;
   padding: 10px 16px 12px;
   background: var(--btk-primary);
   border-radius: 0 0 16px 16px;
@@ -1502,8 +1500,8 @@ button {
   box-sizing: border-box;
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   z-index: 50;
   box-shadow: 0 6px 20px rgba(102, 52, 121, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
@@ -1947,27 +1945,31 @@ button {
 }
 
 /*
- * Тулбар остаётся резким (цвет статус-бара), контент и вкладки — размыты.
- * Модалка z-index 300 выше всего UI; фон блокируется inert + pointer-events.
+ * Верхняя панель поверх затемнения — ровный #3d1f49 без «затемнения».
+ * Вкладки и остров остаются под оверлеем и размываются.
  */
 html.modal-open .toolbar {
-  z-index: 50;
+  z-index: 320;
   pointer-events: none !important;
   filter: none !important;
-  background: #3d1f49;
+  background: #3d1f49 !important;
+  box-shadow: 0 6px 20px rgba(61, 31, 73, 0.35);
 }
 
 html.modal-open .detail-sticky-chrome {
-  z-index: 50;
+  z-index: 320;
   pointer-events: none !important;
+  background: transparent;
 }
 
 html.modal-open .detail-sticky-chrome .toolbar {
   filter: none !important;
+  background: #3d1f49 !important;
 }
 
 html.modal-open .oneui-statusbar {
-  background: #3d1f49;
+  z-index: 321;
+  background: #3d1f49 !important;
   filter: none !important;
   pointer-events: none !important;
 }
@@ -1984,15 +1986,23 @@ html.modal-open .modal-backdrop * {
   pointer-events: auto !important;
 }
 
-/* Размываем контент под тулбаром + вкладки деталки + остров */
+/* Размываем контент и остров под модалкой */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
-html.modal-open .detail-sticky-chrome .tabs-scroll,
 html.modal-open .settings-page > :not(.toolbar),
 html.modal-open .login-screen,
 html.modal-open .bottom-nav,
 html.modal-open .pwa-install-banner {
-  filter: blur(6px);
+  filter: blur(7px);
+}
+
+/* Вкладки над затемнением: сами размыты + лёгкая вуаль, тулбар остаётся #3d1f49 */
+html.modal-open .detail-sticky-chrome .tabs-scroll {
+  filter: blur(7px) !important;
+  background: rgba(245, 243, 247, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
 }
 
 html.modal-open .app-shell,
