@@ -495,7 +495,7 @@ function CarrierTabBlock({
             <div className="carrier-hero-right">
               <button
                 type="button"
-                className={`toggle${portOn ? ' on' : ''}`}
+                className={`toggle toggle-accent${portOn ? ' on' : ''}`}
                 aria-label={portOn ? 'Порт включён' : 'Порт выключен'}
                 onClick={() => setPortOn((v) => !v)}
               >
