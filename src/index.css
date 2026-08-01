@@ -174,8 +174,7 @@ html {
       1,
       calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
     );
-    filter: drop-shadow(0 26px 44px rgba(28, 27, 31, 0.26))
-      drop-shadow(0 8px 14px rgba(102, 52, 121, 0.14));
+    /* Нельзя filter на предке — ломает backdrop-filter («стекло») внутри экрана */
   }
 
   .device-samsung .device-bezel {
@@ -196,6 +195,8 @@ html {
       #4a4a4e 100%
     );
     box-shadow:
+      0 26px 44px rgba(28, 27, 31, 0.26),
+      0 8px 14px rgba(102, 52, 121, 0.14),
       inset 0 0 0 1px rgba(255, 255, 255, 0.16),
       inset 0 0 0 2px rgba(0, 0, 0, 0.55),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -232,7 +233,6 @@ html {
     overflow: hidden;
     transform: scale(var(--ui-scale));
     transform-origin: top left;
-    isolation: isolate;
     background: var(--btk-status);
   }
 
@@ -845,9 +845,7 @@ button {
   min-width: 128px;
   margin-inline: auto;
   height: auto;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 40px;
   box-shadow: 0 10px 32px rgba(102, 52, 121, 0.24);
@@ -858,6 +856,26 @@ button {
   padding: 6px;
   z-index: 40;
   box-sizing: border-box;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Слой «стекла» — отдельным псевдо, чтобы blur не зависел от filter на детях */
+.bottom-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  pointer-events: none;
+}
+
+.bottom-nav > * {
+  position: relative;
+  z-index: 1;
 }
 
 .nav-item {
@@ -1406,21 +1424,36 @@ button {
   pointer-events: auto;
 }
 
-/* Неактивные вкладки — лёгкая прозрачность + blur */
+/* Неактивные вкладки — frosted glass */
 .detail-sticky-chrome .tab:not(.on) {
-  background: rgba(231, 224, 236, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: transparent;
   color: rgba(102, 52, 121, 0.85);
   box-shadow: none;
+}
+
+.detail-sticky-chrome .tab:not(.on)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(231, 224, 236, 0.4);
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  pointer-events: none;
 }
 
 .detail-sticky-chrome .tab.on {
   background: var(--btk-primary);
   color: #fff;
   box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+}
+
+.detail-sticky-chrome .tab.on::before {
+  content: none;
 }
 
 .page-list > .ptr-root {
@@ -1944,9 +1977,9 @@ button {
 }
 
 /*
- * Тулбар поверх оверлея (скругления не трогаем): в углах виден тёмный backdrop.
- * Вкладки / остров размываются через filter (backdrop-filter в PWA ненадёжен).
- * Клики по фону режет inert на .app-shell + pointer-events !important на chrome.
+ * Тулбар поверх оверлея (скругления не трогаем).
+ * Остров и вкладки сохраняют glass (backdrop-filter) — не вешаем filter:blur на них.
+ * Клики по фону: inert + pointer-events !important.
  */
 html.modal-open .toolbar {
   z-index: 110;
@@ -1996,42 +2029,13 @@ html.modal-open .modal-backdrop .modal-card * {
   pointer-events: auto !important;
 }
 
-/* Размываем контент под модалкой (как раньше — filter, не backdrop-filter) */
+/* Размываем только контент страницы, не chrome со «стеклом» */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
 html.modal-open .settings-page > :not(.toolbar),
 html.modal-open .login-screen,
 html.modal-open .pwa-install-banner {
   filter: blur(6px) !important;
-}
-
-/*
- * Вкладки и нижний остров: над оверлеем (иначе blur не видно под rgba),
- * размытие — filter на узле (+ класс .modal-blur из Modal).
- */
-html.modal-open .bottom-nav,
-html.modal-open .bottom-nav.modal-blur {
-  z-index: 110 !important;
-  filter: blur(6px) !important;
-  pointer-events: none !important;
-  /* убрать «стекло» — иначе кажется, что blur нет */
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: rgba(255, 255, 255, 0.72) !important;
-}
-
-html.modal-open .detail-sticky-chrome .tabs-scroll,
-html.modal-open .detail-sticky-chrome .tabs-scroll.modal-blur,
-.bottom-nav.modal-blur,
-.tabs-scroll.modal-blur {
-  filter: blur(6px) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-html.modal-open .detail-sticky-chrome .toolbar,
-html.modal-open .detail-sticky-chrome .toolbar * {
-  filter: none !important;
 }
 
 html.modal-open .app-shell,
