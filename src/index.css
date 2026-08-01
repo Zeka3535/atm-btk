@@ -1931,18 +1931,23 @@ button {
 }
 
 /*
- * Тулбар поверх оверлея (скругления не трогаем): в углах виден тёмный backdrop,
- * а не белый фон списка. Клики блокируем — модалка остаётся модальной.
+ * Тулбар поверх оверлея (скругления не трогаем): в углах виден тёмный backdrop.
+ * Вкладки деталки (.tabs-scroll) при модалке тоже размываются.
  */
-html.modal-open .toolbar,
-html.modal-open .detail-sticky-chrome {
+html.modal-open .toolbar {
   z-index: 110;
   pointer-events: none;
   filter: none !important;
+  background: #3d1f49;
 }
 
-html.modal-open .toolbar {
-  background: #3d1f49;
+html.modal-open .detail-sticky-chrome {
+  z-index: 110;
+  pointer-events: none;
+}
+
+html.modal-open .detail-sticky-chrome .toolbar {
+  filter: none !important;
 }
 
 html.modal-open .oneui-statusbar {
@@ -1956,9 +1961,10 @@ html.modal-open .device-screen .app-shell {
   background-color: #3d1f49;
 }
 
-/* Размываем только контент под тулбаром */
+/* Размываем контент под тулбаром + вкладки деталки */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
+html.modal-open .detail-sticky-chrome .tabs-scroll,
 html.modal-open .settings-page > :not(.toolbar),
 html.modal-open .login-screen,
 html.modal-open .bottom-nav,
