@@ -742,7 +742,9 @@ button {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background: var(--btk-surface);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(209, 201, 214, 0.55);
   border-radius: 15px;
   box-shadow: var(--btk-shadow-lg);
@@ -843,7 +845,9 @@ button {
   min-width: 128px;
   margin-inline: auto;
   height: auto;
-  background: var(--btk-surface);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 40px;
   box-shadow: 0 10px 32px rgba(102, 52, 121, 0.24);
   display: flex;
@@ -960,7 +964,9 @@ button {
   z-index: 60;
   box-sizing: border-box;
   padding: 10px 16px;
-  background: rgba(26, 18, 32, 0.88);
+  background: rgba(26, 18, 32, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: #fff;
   border-radius: 999px;
   font-size: 0.84rem;
@@ -1481,7 +1487,9 @@ button {
   max-width: 100%;
   margin: 0;
   padding: 10px 16px 12px;
-  background: var(--btk-primary);
+  background: rgba(102, 52, 121, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 0 0 16px 16px;
   color: #fff;
   box-sizing: border-box;
