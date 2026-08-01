@@ -23,12 +23,15 @@ export function BtkSelect({
   value,
   options,
   onChange,
+  menuPlacement = 'down',
 }: {
   id?: string
   label: string
   value: string
   options: string[]
   onChange: (v: string) => void
+  /** down — вниз (по умолчанию); up — вверх (поля у нижнего края модалки) */
+  menuPlacement?: 'down' | 'up'
 }) {
   const genId = useId()
   const selectId = id ?? genId
@@ -74,7 +77,7 @@ export function BtkSelect({
         {open && (
           <ul
             id={listId}
-            className="btk-select-menu"
+            className={`btk-select-menu${menuPlacement === 'up' ? ' up' : ''}`}
             role="listbox"
             aria-labelledby={`${selectId}-label`}
           >

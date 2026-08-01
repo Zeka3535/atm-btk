@@ -2202,6 +2202,12 @@ html.modal-open .device-screen {
   overflow-y: auto;
 }
 
+.btk-select-menu.up {
+  top: auto;
+  bottom: calc(100% + 6px);
+  box-shadow: 0 -8px 28px rgba(102, 52, 121, 0.16);
+}
+
 .btk-select-option {
   width: 100%;
   display: flex;

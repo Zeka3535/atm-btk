@@ -90,6 +90,7 @@ export function WifiSettingsModal({ taskId, onClose }: Props) {
           value={band}
           options={WIFI_BANDS}
           onChange={setBand}
+          menuPlacement="up"
         />
         <div className="modal-actions stitch-actions">
           <button type="button" className="btn btn-outline" onClick={onClose}>
