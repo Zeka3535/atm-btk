@@ -745,7 +745,7 @@ button {
   border-radius: 15px;
   box-shadow: var(--btk-shadow-lg);
   box-sizing: border-box;
-  animation: btk-snack-in 0.22s ease-out both;
+  animation: pwa-install-in 0.22s ease-out both;
 }
 
 /* Без острова навигации (логин, настройки) — ближе к низу */
@@ -817,6 +817,18 @@ button {
   right: 12px;
   width: auto;
   margin: 0;
+}
+
+@keyframes pwa-install-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .bottom-nav {
@@ -3133,6 +3145,7 @@ button {
   color: #dc2626;
   font-weight: 600;
   margin: 0 0 10px;
+  text-align: center;
 }
 
 .loader-wrap {

@@ -19,6 +19,9 @@ export function PwaInstallBanner() {
   useEffect(() => {
     if (isPwaStandalone()) return
 
+    /* Баннер нужен при каждом запуске вне PWA, даже если Chrome не отдал BIP. */
+    const bannerTimer = window.setTimeout(() => setVisible(true), 500)
+
     const onBip = (e: Event) => {
       e.preventDefault()
       setDeferred(e as BeforeInstallPromptEventLike)
@@ -43,6 +46,7 @@ export function PwaInstallBanner() {
     return () => {
       window.removeEventListener('beforeinstallprompt', onBip)
       window.removeEventListener('appinstalled', onInstalled)
+      window.clearTimeout(bannerTimer)
       if (iosTimer) window.clearTimeout(iosTimer)
     }
   }, [])
@@ -76,7 +80,9 @@ export function PwaInstallBanner() {
         <p>
           {iosHint && !deferred
             ? 'Поделиться → На экран «Домой» — приложение на главном экране.'
-            : 'Можно установить как приложение. Работает с главного экрана, без браузерной рамки.'}
+            : deferred
+              ? 'Можно установить как приложение. Работает с главного экрана, без браузерной рамки.'
+              : 'Откройте меню браузера и выберите «Установить приложение».'}
         </p>
       </div>
       <div className="pwa-install-actions">

@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -9,6 +10,12 @@ import {
 import { OneUiStatusBar } from './OneUiStatusBar'
 
 const DevicePortalContext = createContext<HTMLElement | null>(null)
+const DESKTOP_PREVIEW_WIDTH = 900
+
+function isDesktopPreview(): boolean {
+  const visualWidth = window.visualViewport?.width ?? window.innerWidth
+  return Math.min(window.innerWidth, visualWidth) >= DESKTOP_PREVIEW_WIDTH
+}
 
 /** Корень для порталов (модалки) — экран виртуального телефона */
 export function useDevicePortalRoot(): HTMLElement | null {
@@ -22,10 +29,28 @@ export function useDevicePortalRoot(): HTMLElement | null {
 export function DeviceFrame({ children }: { children: ReactNode }) {
   const screenRef = useRef<HTMLDivElement>(null)
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null)
+  const [desktopPreview, setDesktopPreview] = useState(isDesktopPreview)
 
   useLayoutEffect(() => {
-    setPortalEl(screenRef.current)
+    setPortalEl(desktopPreview ? screenRef.current : null)
+  }, [desktopPreview])
+
+  useEffect(() => {
+    const syncPreview = () => setDesktopPreview(isDesktopPreview())
+    const viewport = window.visualViewport
+
+    syncPreview()
+    window.addEventListener('resize', syncPreview)
+    viewport?.addEventListener('resize', syncPreview)
+    return () => {
+      window.removeEventListener('resize', syncPreview)
+      viewport?.removeEventListener('resize', syncPreview)
+    }
   }, [])
+
+  if (!desktopPreview) {
+    return <DevicePortalContext.Provider value={null}>{children}</DevicePortalContext.Provider>
+  }
 
   return (
     <DevicePortalContext.Provider value={portalEl}>
