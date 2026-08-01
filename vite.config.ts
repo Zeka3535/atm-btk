@@ -6,6 +6,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 // По умолчанию './' + HashRouter — работает и локально, и на Pages.
 const base = process.env.VITE_BASE || './'
 
+// В CSS: -webkit-backdrop-filter писать ПЕРЕД backdrop-filter.
+// Иначе lightningcss (minify Vite 8) выкидывает unprefixed — в Chrome нет «стекла».
 export default defineConfig({
   base,
   plugins: [
