@@ -236,7 +236,7 @@ html {
     background: var(--btk-status);
   }
 
-  /* Статус-бар One UI 7/8.5 */
+  /* Статус-бар One UI 7/8.5 — прозрачный, чтобы не было шва с тулбаром */
   .device-samsung .oneui-statusbar {
     display: flex;
     position: fixed;
@@ -251,8 +251,7 @@ html {
     justify-content: space-between;
     color: #fff;
     pointer-events: none;
-    background: var(--btk-status);
-    transition: background-color 0.2s ease;
+    background: transparent;
   }
 
   /* Как в шторке: path fill white @ 0.8 */
@@ -1928,6 +1927,15 @@ button {
 /* В макете — оверлей ниже One UI статус-бара (верхняя панель без размытия) */
 .device-screen > .modal-backdrop {
   top: var(--safe-top);
+}
+
+/* При модалке статус-зона и тулбар одного цвета — без линии-рамки между ними */
+body:has(.modal-backdrop) .toolbar {
+  background: var(--btk-status);
+}
+
+.device-screen:has(> .modal-backdrop) .oneui-statusbar {
+  background: var(--btk-status);
 }
 
 /*
