@@ -1954,11 +1954,22 @@ html.modal-open .oneui-statusbar {
   filter: none !important;
 }
 
-/* Без нижних скруглений — иначе в углах видна светлая подложка списка */
-html.modal-open .toolbar,
-html.modal-open .app-shell:has(.toolbar) .toolbar {
-  border-radius: 0;
-  box-shadow: none;
+/*
+ * Подложка под тулбаром с теми же скруглениями —
+ * в нижних углах не просвечивает светлый фон списка.
+ */
+html.modal-open .app-shell:has(.toolbar)::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--app-max), 100%);
+  height: var(--toolbar-h);
+  background: #3d1f49;
+  border-radius: 0 0 16px 16px;
+  z-index: 49;
+  pointer-events: none;
 }
 
 /*
