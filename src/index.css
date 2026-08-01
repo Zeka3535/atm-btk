@@ -1989,6 +1989,11 @@ html.modal-open .device-screen {
   animation: modal-slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Чтобы выпадающий список вниз не обрезался краем модалки */
+.modal-card:has(.btk-select-trigger.open) {
+  overflow: visible;
+}
+
 @keyframes modal-slide-up {
   from {
     transform: translateY(100%);
@@ -2179,7 +2184,7 @@ html.modal-open .device-screen {
   transform: rotate(180deg);
 }
 
-/* Список вверх — в модалке отчёта поле у нижнего края */
+/* Список вниз от триггера */
 .btk-select-menu {
   list-style: none;
   margin: 0;
@@ -2187,12 +2192,12 @@ html.modal-open .device-screen {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   z-index: 8;
   background: var(--btk-surface);
   border: 1px solid #ebe4f0;
   border-radius: 14px;
-  box-shadow: 0 -8px 28px rgba(102, 52, 121, 0.16);
+  box-shadow: 0 8px 28px rgba(102, 52, 121, 0.16);
   max-height: 220px;
   overflow-y: auto;
 }
