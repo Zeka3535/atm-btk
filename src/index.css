@@ -153,7 +153,7 @@ html {
 
   /*
    * Логический экран 390×844, визуально --ui-scale.
-   * zoom на .device-screen держит position:fixed внутри рамки.
+   * UI в iframe: scale только на iframe снаружи → backdrop-filter внутри живой.
    */
   .device-phone.device-samsung {
     --screen-w: 390px;
@@ -213,171 +213,39 @@ html {
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   }
 
-  .device-samsung .device-screen {
-    /* One UI: высота под крупные иконки статус-бара */
-    --safe-top: 38px;
-    --safe-bottom: 16px;
-    --toolbar-h: calc(66px + var(--safe-top));
-    --detail-chrome-h: calc(
-      var(--toolbar-h) + var(--detail-toolbar-tabs-gap) + var(--detail-tabs-h) +
-        var(--detail-tabs-card-gap)
-    );
+  /* Scale на iframe (снаружи документа) — стекло внутри не ломается */
+  .device-samsung .device-screen-iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: var(--screen-w);
     height: var(--screen-h);
+    min-width: 0;
     min-height: 0;
-    border-radius: 0;
-    overflow: hidden;
-    /*
-     * scale создаёт containing block для position:fixed —
-     * тулбар/остров/статус остаются в рамке. zoom в Chrome это больше не даёт.
-     * backdrop-filter внутри ломается — см. плотный фон у .bottom-nav ниже.
-     */
+    max-width: none;
+    max-height: none;
+    border: 0;
+    display: block;
     transform: scale(var(--ui-scale));
     transform-origin: 0 0;
     background: var(--btk-status);
   }
 
-  /* Статус-бар One UI 7/8.5 — прозрачный, чтобы не было шва с тулбаром */
-  .device-samsung .oneui-statusbar {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 210;
-    height: var(--safe-top);
-    padding: 0 18px;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: space-between;
-    color: #fff;
-    pointer-events: none;
-    background: transparent;
-  }
-
-  /* Как в шторке: path fill white @ 0.8 */
-  .oneui-clock {
-    position: relative;
-    z-index: 1;
-    display: block;
-    flex-shrink: 0;
-    font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.01em;
-    font-variant-numeric: tabular-nums;
-    color: rgba(255, 255, 255, 0.8);
-  }
-
-  .oneui-sb-right {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    /* LTE → сигнал → батарея */
-    gap: 4px;
-    height: 20px;
-  }
-
-  .oneui-ico {
-    display: block;
-    flex-shrink: 0;
-    overflow: visible;
-  }
-
-  /* LTE + стрелки ~14×17 */
-  .oneui-ico-lte {
-    width: 14px;
-    height: 17px;
-  }
-
-  /* viewBox ~14×15.4 из шторки */
-  .oneui-ico-signal {
-    width: 15px;
-    height: 16px;
-  }
-
-  /* Пилюля 28×16.5 как path M395…423 */
-  .oneui-battery {
-    position: relative;
-    width: 28px;
-    height: 16.5px;
-    flex-shrink: 0;
-  }
-
-  .oneui-battery-svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Чёрный % — как fill="black" у «69» в SVG шторки */
-  .oneui-battery-pct {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
-    font-size: 10.5px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
-    color: #000;
-    pointer-events: none;
-  }
-
-  /* Явный отступ списка/настроек под fixed-тулбаром внутри макета */
-  .device-samsung .device-screen .page-list {
-    padding-top: calc(var(--toolbar-h) + 12px);
-  }
-
-  .device-samsung .device-screen .settings-page {
-    padding-top: calc(var(--toolbar-h) + 16px);
-  }
-
-  /*
-   * app-shell в цвет статус-панели — заливает верхние скругления клипа;
-   * страницы рисуют свой светлый фон ниже шапки.
-   */
-  .device-samsung .device-screen .app-shell {
-    background: var(--btk-status);
-  }
-
-  .device-samsung .device-screen .page-list,
-  .device-samsung .device-screen .detail-page,
-  .device-samsung .device-screen .settings-page {
-    background: var(--btk-bg);
-    min-height: 100%;
-    box-sizing: border-box;
-  }
-
-  .device-samsung .device-screen .login-shell {
-    background: var(--btk-bg);
-  }
-
-  /* Punch-hole камера по центру сверху (Samsung) */
+  /* Punch-hole камера по центру сверху (Samsung) — в координатах клипа */
   .device-samsung .device-punch {
     display: block;
     position: absolute;
-    top: 9px;
+    top: 7px;
     left: 50%;
     z-index: 220;
-    width: 14px;
-    height: 14px;
+    width: 11px;
+    height: 11px;
     transform: translateX(-50%);
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #1c2430 0%, #050608 62%, #000 100%);
     box-shadow:
-      0 0 0 1.5px #0a0a0a,
-      0 0 0 2.5px rgba(40, 40, 44, 0.9),
+      0 0 0 1.2px #0a0a0a,
+      0 0 0 2px rgba(40, 40, 44, 0.9),
       inset 0 0 2px rgba(120, 160, 220, 0.25);
     pointer-events: none;
   }
@@ -414,47 +282,170 @@ html {
     height: 64px;
     border-radius: 0 2px 2px 0;
   }
+}
 
-  .device-screen .app-shell {
-    max-width: 100%;
-    width: 100%;
-    min-height: 100%;
-    height: 100%;
-    margin: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    /* скругление в логических px (clip_r / ui-scale) */
-    border-radius: calc((var(--device-radius) - 5px) / var(--ui-scale));
-  }
+/*
+ * Содержимое iframe-макета: One UI safe-area, без transform на предках —
+ * backdrop-filter («стекло») работает как на узком PWA.
+ */
+html.device-embed {
+  --safe-top: 38px;
+  --safe-bottom: 16px;
+  --toolbar-h: calc(66px + var(--safe-top));
+  --detail-chrome-h: calc(
+    var(--toolbar-h) + var(--detail-toolbar-tabs-gap) + var(--detail-tabs-h) +
+      var(--detail-tabs-card-gap)
+  );
+  --device-radius: 38px;
+  background: var(--btk-status);
+}
 
-  .device-screen .login-shell {
-    min-height: 100%;
-    height: 100%;
-  }
+html.device-embed,
+html.device-embed body,
+html.device-embed #root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--btk-status);
+}
 
-  .device-screen .modal-card {
-    width: 100%;
-    max-width: 100%;
-    max-height: 92%;
-  }
+html.device-embed .oneui-statusbar {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 210;
+  height: var(--safe-top);
+  padding: 0 18px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  pointer-events: none;
+  background: transparent;
+}
 
-  .device-screen .modal-card-center {
-    width: calc(100% - 24px);
-    max-width: calc(100% - 24px);
-  }
+/* Иконки статус-бара — и в iframe (узкий viewport), и на хосте */
+.oneui-clock {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex-shrink: 0;
+  font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.8);
+}
 
-  /* В макете scale ломает backdrop-filter — плотный фон вместо blur */
-  .device-screen .bottom-nav {
-    background: rgba(255, 255, 255, 0.88);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+.oneui-sb-right {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 20px;
+}
 
-  .device-screen .detail-sticky-chrome .tab:not(.on) {
-    background: rgba(231, 224, 236, 0.92);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+.oneui-ico {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.oneui-ico-lte {
+  width: 14px;
+  height: 17px;
+}
+
+.oneui-ico-signal {
+  width: 15px;
+  height: 16px;
+}
+
+.oneui-battery {
+  position: relative;
+  width: 28px;
+  height: 16.5px;
+  flex-shrink: 0;
+}
+
+.oneui-battery-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.oneui-battery-pct {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #000;
+  pointer-events: none;
+}
+
+html.device-embed .app-shell {
+  max-width: 100%;
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--btk-status);
+  border-radius: calc(var(--device-radius) - 5px);
+}
+
+html.device-embed .page-list {
+  padding-top: calc(var(--toolbar-h) + 12px);
+}
+
+html.device-embed .settings-page {
+  padding-top: calc(var(--toolbar-h) + 16px);
+}
+
+html.device-embed .page-list,
+html.device-embed .detail-page,
+html.device-embed .settings-page {
+  background: var(--btk-bg);
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+html.device-embed .login-shell {
+  background: var(--btk-bg);
+  min-height: 100%;
+  height: 100%;
+}
+
+html.device-embed .modal-card {
+  width: 100%;
+  max-width: 100%;
+  max-height: 92%;
+}
+
+html.device-embed .modal-card-center {
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+}
+
+html.device-embed .pwa-install-banner {
+  left: 16px;
+  right: 16px;
+  width: auto;
 }
 
 html::-webkit-scrollbar {
@@ -1965,7 +1956,8 @@ button {
 }
 
 /* В макете оверлей ниже One UI статус-бара */
-.device-screen > .modal-backdrop {
+.device-screen > .modal-backdrop,
+html.device-embed .modal-backdrop {
   top: var(--safe-top);
 }
 
