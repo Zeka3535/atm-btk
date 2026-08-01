@@ -3637,6 +3637,10 @@ html.modal-open .device-screen {
   gap: 10px;
 }
 
+.wifi-status-head {
+  margin-top: 18px;
+}
+
 .stitch-svc-card {
   display: flex;
   align-items: center;

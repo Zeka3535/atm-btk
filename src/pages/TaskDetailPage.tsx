@@ -154,6 +154,13 @@ function TabBody({
 }) {
   if (tab === 'services') {
     const list = task.abonServices ?? []
+    const wifiSvc = list.find((s) => /wi/i.test(s.type))
+    const servicesOnly = list.filter((s) => !/wi/i.test(s.type))
+    const linesOnly = (task.serviceLines ?? []).filter((line) => !/wi/i.test(line))
+    const showWifi =
+      !!task.wifi || !!wifiSvc || (task.services?.includes('wifi') ?? false)
+    const emptyServices =
+      servicesOnly.length === 0 && linesOnly.length === 0 && !showWifi
 
     return (
       <div className="detail-block stitch-services">
@@ -161,13 +168,11 @@ function TabBody({
           <h3>Подключенные услуги</h3>
         </div>
 
-        {list.length === 0 && (!task.serviceLines || task.serviceLines.length === 0) && (
-          <p className="muted">Услуги не привязаны к заявке</p>
-        )}
+        {emptyServices && <p className="muted">Услуги не привязаны к заявке</p>}
 
-        {list.length > 0 ? (
+        {servicesOnly.length > 0 ? (
           <ul className="abon-service-list stitch-svc-list">
-            {groupAbonServices(list).map((item) =>
+            {groupAbonServices(servicesOnly).map((item) =>
               item.kind === 'phones' ? (
                 <TelephonyServiceRow
                   key={`tel-${item.phones.join('-')}`}
@@ -178,17 +183,33 @@ function TabBody({
                 <AbonServiceRow
                   key={`${item.service.type}-${item.service.tariff}-${item.service.login ?? ''}`}
                   service={item.service}
-                  onWifi={onWifi}
                 />
               ),
             )}
           </ul>
         ) : (
-          <ul className="service-list">
-            {(task.serviceLines ?? []).map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+          linesOnly.length > 0 && (
+            <ul className="service-list">
+              {linesOnly.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )
+        )}
+
+        {showWifi && (
+          <>
+            <div className="section-head wifi-status-head">
+              <h3>Состояние Wi‑Fi</h3>
+            </div>
+            <ul className="abon-service-list stitch-svc-list">
+              <WifiStatusRow
+                ssid={task.wifi?.ssid}
+                status={wifiSvc?.status}
+                onWifi={onWifi}
+              />
+            </ul>
+          </>
         )}
       </div>
     )
@@ -326,15 +347,8 @@ function groupAbonServices(list: AbonService[]) {
   return out
 }
 
-function AbonServiceRow({
-  service,
-  onWifi,
-}: {
-  service: AbonService
-  onWifi: () => void
-}) {
+function AbonServiceRow({ service }: { service: AbonService }) {
   const tone = serviceTone(service.type)
-  const isWifi = /wi/i.test(service.type)
 
   return (
     <li className={`stitch-svc-card tone-${tone}`}>
@@ -350,11 +364,35 @@ function AbonServiceRow({
         )}
         {service.tariff && <div className="stitch-svc-tariff">{service.tariff}</div>}
       </div>
-      {isWifi ? (
-        <button type="button" className="stitch-svc-setup" onClick={onWifi}>
-          Настроить
-        </button>
-      ) : null}
+    </li>
+  )
+}
+
+/** Wi‑Fi — не услуга: отдельно, вместо «Роутер» — имя сети */
+function WifiStatusRow({
+  ssid,
+  status,
+  onWifi,
+}: {
+  ssid?: string
+  status?: AbonService['status']
+  onWifi: () => void
+}) {
+  const statusLabel =
+    status === 'online' ? 'В сети' : status === 'offline' ? 'Не в сети' : status === 'blocked' ? 'Блок' : null
+
+  return (
+    <li className="stitch-svc-card tone-purple">
+      <div className="stitch-svc-ico tone-purple" aria-hidden>
+        <ServiceGlyph type="Wi‑Fi" />
+      </div>
+      <div className="stitch-svc-body">
+        <strong>{ssid?.trim() || 'Сеть не задана'}</strong>
+        {statusLabel && <div className="stitch-svc-tariff">{statusLabel}</div>}
+      </div>
+      <button type="button" className="stitch-svc-setup" onClick={onWifi}>
+        Настроить
+      </button>
     </li>
   )
 }
