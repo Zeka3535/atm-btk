@@ -73,9 +73,15 @@ export function Modal({
     document.documentElement.classList.add('modal-open')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    /* inert — надёжнее CSS pointer-events: фон под модалкой не кликается */
+    const shells = Array.from(
+      document.querySelectorAll<HTMLElement>('.app-shell, .login-shell, .pwa-install-banner'),
+    )
+    shells.forEach((el) => el.setAttribute('inert', ''))
     return () => {
       document.documentElement.classList.remove('modal-open')
       document.body.style.overflow = prev
+      shells.forEach((el) => el.removeAttribute('inert'))
       applyThemeColor(PWA_THEME)
     }
   }, [open])

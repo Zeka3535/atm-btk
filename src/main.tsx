@@ -6,7 +6,16 @@ import { setupPwaChrome } from './lib/pwa'
 import './index.css'
 
 setupPwaChrome()
-registerSW({ immediate: true })
+/* Сразу подхватываем новый билд — иначе Pages/PWA держат старый CSS (404 на hash) */
+registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    window.location.reload()
+  },
+  onRegisteredSW(_url, registration) {
+    registration?.update().catch(() => {})
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
