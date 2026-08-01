@@ -893,8 +893,8 @@ button {
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--btk-accent);
-  color: #083344;
+  background: var(--btk-primary);
+  color: #fff;
   font-size: 0.6rem;
   font-weight: 800;
   display: flex;
