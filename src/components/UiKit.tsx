@@ -81,27 +81,12 @@ export function Modal({
       el.setAttribute('inert', '')
       el.setAttribute('aria-hidden', 'true')
     }
-    /*
-     * Blur вкладок/острова — как у контента под модалкой: filter на самих узлах.
-     * Класс + inline !important, чтобы не терялось в PWA/макете со scale.
-     */
-    const blurEls = Array.from(
-      document.querySelectorAll<HTMLElement>('.bottom-nav, .detail-sticky-chrome .tabs-scroll'),
-    )
-    for (const el of blurEls) {
-      el.classList.add('modal-blur')
-      el.style.setProperty('filter', 'blur(6px)', 'important')
-    }
     return () => {
       document.documentElement.classList.remove('modal-open')
       document.body.style.overflow = prev
       for (const el of blocked) {
         el.removeAttribute('inert')
         el.removeAttribute('aria-hidden')
-      }
-      for (const el of blurEls) {
-        el.classList.remove('modal-blur')
-        el.style.removeProperty('filter')
       }
       applyThemeColor(PWA_THEME)
     }
