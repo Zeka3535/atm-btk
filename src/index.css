@@ -2213,6 +2213,14 @@ html.modal-open .device-screen {
   box-shadow: 0 8px 28px rgba(102, 52, 121, 0.16);
   max-height: 220px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.btk-select-menu::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .btk-select-menu.up {
