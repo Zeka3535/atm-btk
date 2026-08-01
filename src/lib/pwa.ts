@@ -30,18 +30,23 @@ export function setupPwaChrome() {
 
 /** Цвет системной статус-панели = тулбар ATM */
 export function applyThemeColor(color: string) {
-  document.documentElement.style.setProperty('--btk-status', color)
-  document.documentElement.style.backgroundColor = color
+  const root = document.documentElement
+  root.style.setProperty('--btk-status', color)
+  root.style.backgroundColor = color
+  if (document.body) document.body.style.backgroundColor = color
 
-  const metas = document.querySelectorAll('meta[name="theme-color"]')
-  if (metas.length === 0) {
-    const m = document.createElement('meta')
-    m.name = 'theme-color'
-    m.content = color
-    document.head.appendChild(m)
-    return
+  /* Один meta без media — Android быстрее подхватывает смену theme-color */
+  let meta = document.querySelector('meta[name="theme-color"]:not([media])') as HTMLMetaElement | null
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.insertBefore(meta, document.head.firstChild)
   }
-  metas.forEach((m) => m.setAttribute('content', color))
+  meta.content = color
+
+  document.querySelectorAll('meta[name="theme-color"][media]').forEach((m) => {
+    m.setAttribute('content', color)
+  })
 
   const tile = document.querySelector('meta[name="msapplication-TileColor"]')
   if (tile) tile.setAttribute('content', color)

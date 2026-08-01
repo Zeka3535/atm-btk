@@ -1924,43 +1924,56 @@ button {
   box-sizing: border-box;
 }
 
-/* В макете — оверлей ниже One UI статус-бара (верхняя панель без размытия) */
+/*
+ * Оверлей ниже статус-бара + тулбара — иначе backdrop-filter размывает верхнюю панель.
+ * Без тулбара (логин) — только ниже One UI статус-бара.
+ */
 .device-screen > .modal-backdrop {
   top: var(--safe-top);
 }
 
-/* При модалке статус-зона и тулбар одного цвета — без линии-рамки между ними */
-body:has(.modal-backdrop) .toolbar {
-  background: var(--btk-status);
+.device-screen:has(.toolbar) > .modal-backdrop,
+body:has(.toolbar) > .modal-backdrop {
+  top: var(--toolbar-h);
 }
 
-.device-screen:has(> .modal-backdrop) .oneui-statusbar {
-  background: var(--btk-status);
+/*
+ * Цвет системной зоны сразу с появлением модалки (тот же кадр, без ожидания JS).
+ * В PWA meta theme-color всё равно идёт через applyThemeColor в useLayoutEffect.
+ */
+html.modal-open,
+html.modal-open .device-screen,
+html.modal-open .device-screen-clip,
+html.modal-open .device-screen .app-shell {
+  background-color: #3d1f49;
+}
+
+html.modal-open .toolbar,
+html.modal-open .oneui-statusbar {
+  background: #3d1f49;
+  filter: none !important;
 }
 
 /*
  * Размываем только контент под тулбаром.
- * Статус-бар One UI и .toolbar не трогаем — без белой каймы от blur всего #root.
+ * Статус-бар One UI и .toolbar не трогаем.
  */
-body:has(.modal-backdrop) .page-list > .ptr-root,
-body:has(.modal-backdrop) .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
-body:has(.modal-backdrop) .settings-page > :not(.toolbar),
-body:has(.modal-backdrop) .login-screen,
-body:has(.modal-backdrop) .bottom-nav,
-body:has(.modal-backdrop) .pwa-install-banner {
+html.modal-open .page-list > .ptr-root,
+html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
+html.modal-open .settings-page > :not(.toolbar),
+html.modal-open .login-screen,
+html.modal-open .bottom-nav,
+html.modal-open .pwa-install-banner {
   filter: blur(6px);
 }
 
-/* Обрезаем ореол filter:blur, чтобы не было белых краёв */
-body:has(.modal-backdrop) .app-shell,
-body:has(.modal-backdrop) .login-shell,
-.device-screen:has(> .modal-backdrop) {
+html.modal-open .app-shell,
+html.modal-open .login-shell,
+html.modal-open .device-screen {
   overflow: hidden;
 }
 
-body:has(.modal-backdrop) .toolbar,
-body:has(.modal-backdrop) .detail-sticky-chrome,
-body:has(.modal-backdrop) .oneui-statusbar {
+html.modal-open .detail-sticky-chrome {
   filter: none !important;
 }
 

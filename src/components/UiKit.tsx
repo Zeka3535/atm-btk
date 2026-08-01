@@ -1,4 +1,10 @@
-import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useRef } from 'react'
+import {
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { formatPhoneDisplay, linkifyPhones, telHref } from '../types'
 import { useDevicePortalRoot } from './DeviceFrame'
@@ -60,12 +66,15 @@ export function Modal({
     vy: 0,
   })
 
-  useEffect(() => {
+  /* До paint — без кадра с «старым» цветом статус-бара */
+  useLayoutEffect(() => {
     if (!open) return
     applyThemeColor(PWA_THEME_MODAL)
+    document.documentElement.classList.add('modal-open')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
+      document.documentElement.classList.remove('modal-open')
       document.body.style.overflow = prev
       applyThemeColor(PWA_THEME)
     }
