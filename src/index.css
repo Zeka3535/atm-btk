@@ -1911,10 +1911,10 @@ button {
   width: 100%;
   max-width: none;
   margin: 0;
-  background: rgba(0, 0, 0, 0.32);
-  /* Доп. блюр там, где backdrop-filter живой; в макете/части WebView не работает */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.4);
+  /* Доп. блюр там, где backdrop-filter живой */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 100;
   display: flex;
   align-items: flex-end;
@@ -1923,13 +1923,35 @@ button {
   box-sizing: border-box;
 }
 
+/* В макете — оверлей ниже One UI статус-бара (верхняя панель без размытия) */
+.device-screen > .modal-backdrop {
+  top: var(--safe-top);
+}
+
 /*
- * Надёжное размытие: backdrop-filter ломается у родителя с transform/isolation
- * (макет Samsung) и в части Android WebView — поэтому блюрим сам контент под оверлеем.
+ * Размываем только контент под тулбаром.
+ * Статус-бар One UI и .toolbar не трогаем — без белой каймы от blur всего #root.
  */
-.device-screen:has(> .modal-backdrop) > :not(.modal-backdrop),
-body:has(> .modal-backdrop) #root {
-  filter: blur(8px);
+body:has(.modal-backdrop) .page-list > .ptr-root,
+body:has(.modal-backdrop) .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
+body:has(.modal-backdrop) .settings-page > :not(.toolbar),
+body:has(.modal-backdrop) .login-screen,
+body:has(.modal-backdrop) .bottom-nav,
+body:has(.modal-backdrop) .pwa-install-banner {
+  filter: blur(6px);
+}
+
+/* Обрезаем ореол filter:blur, чтобы не было белых краёв */
+body:has(.modal-backdrop) .app-shell,
+body:has(.modal-backdrop) .login-shell,
+.device-screen:has(> .modal-backdrop) {
+  overflow: hidden;
+}
+
+body:has(.modal-backdrop) .toolbar,
+body:has(.modal-backdrop) .detail-sticky-chrome,
+body:has(.modal-backdrop) .oneui-statusbar {
+  filter: none !important;
 }
 
 .modal-card {
