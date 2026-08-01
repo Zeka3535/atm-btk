@@ -152,13 +152,13 @@ html {
   }
 
   /*
-   * Логический экран 384×854 (как современные Samsung Galaxy),
+   * Логический экран 412×915 (как современные Samsung Galaxy / Pixel),
    * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
    */
   .device-phone.device-samsung {
-    --screen-w: 384px;
-    --screen-h: 854px;
-    --ui-scale: 0.85;
+    --screen-w: 412px;
+    --screen-h: 915px;
+    --ui-scale: 0.75;
     --device-radius: 38px;
     --device-bezel: 9px;
     --clip-w: calc(var(--screen-w) * var(--ui-scale));
@@ -3198,7 +3198,7 @@ button {
 }
 
 .stitch-card .task-address {
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--btk-text);
   line-height: 1.25;
@@ -3265,7 +3265,7 @@ button {
 }
 
 .stitch-card .task-text {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--btk-text);
   margin: 4px 0 8px;
