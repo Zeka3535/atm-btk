@@ -7,6 +7,8 @@ const METRICS_HW_OK: MetricRow[] = [
   { icon: 'optical', label: 'Оптический уровень', value: '−19.8 дБм' },
   { icon: 'laser', label: 'Лазер TX', value: '1.8 дБм' },
   { icon: 'modem', label: 'Серийный номер', value: 'HWTC9F8E7D6' },
+  { icon: 'router', label: 'MAC-адрес', value: 'A4:C1:38:9F:8E:7D' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '14.11.2024' },
   { icon: 'thermo', label: 'Температура ONU', value: '38 °C' },
 ]
 
@@ -16,6 +18,8 @@ const METRICS_ZTE_OK: MetricRow[] = [
   { icon: 'thermo', label: 'Температура ONU', value: '41 °C' },
   { icon: 'attenuation', label: 'Затухание', value: '−22.4 / −21.5 дБ' },
   { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC8A1B2C3' },
+  { icon: 'router', label: 'MAC-адрес', value: '00:19:C6:C8:A1:B2' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '03.02.2025' },
 ]
 
 const METRICS_ZTE_LOS: MetricRow[] = [
@@ -23,17 +27,23 @@ const METRICS_ZTE_LOS: MetricRow[] = [
   { icon: 'laser', label: 'Лазер TX', value: 'нет данных' },
   { icon: 'attenuation', label: 'Затухание', value: '−27.2 / −28.0 дБ' },
   { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC8A1B2C3' },
+  { icon: 'router', label: 'MAC-адрес', value: '00:19:C6:C8:A1:B2' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '03.02.2025' },
   { icon: 'thermo', label: 'Температура ONU', value: '36 °C' },
 ]
 
 const METRICS_HW_NEW: MetricRow[] = [
   { icon: 'modem', label: 'Серийный номер', value: 'HWTC4A7B2C91' },
+  { icon: 'router', label: 'MAC-адрес', value: 'A4:C1:38:4A:7B:2C' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '28.07.2025' },
   { icon: 'optical', label: 'Оптический уровень', value: 'нет данных' },
   { icon: 'speed', label: 'Тариф', value: 'Ясна 200 Смарт' },
 ]
 
 const METRICS_ZTE_NEW: MetricRow[] = [
   { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC5D8E3F1' },
+  { icon: 'router', label: 'MAC-адрес', value: '00:19:C6:5D:8E:3F' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '19.06.2025' },
   { icon: 'optical', label: 'Оптический уровень', value: 'нет данных' },
   { icon: 'speed', label: 'Тариф', value: 'Ясна 500 Смарт' },
 ]
@@ -43,6 +53,8 @@ const METRICS_DSLAM_OK: MetricRow[] = [
   { icon: 'attenuation', label: 'Затухание', value: '32 дБ' },
   { icon: 'speed', label: 'Профиль', value: 'ADSL2+ 12/1 Мбит/с' },
   { icon: 'modem', label: 'Порт DSLAM', value: 'Брест-7 / 0/2/3' },
+  { icon: 'router', label: 'MAC-адрес', value: 'C8:3A:35:12:9B:44' },
+  { icon: 'calendar', label: 'Дата выдачи', value: '11.09.2023' },
 ]
 
 const PRIMARY_OK: MetricRow[] = [
@@ -533,6 +545,8 @@ export const MOCK_TASKS: DemoTask[] = [
       { icon: 'laser', label: 'Лазер TX', value: '2.0 дБм' },
       { icon: 'thermo', label: 'Температура ONU', value: '40 °C' },
       { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC9D2E1F0' },
+      { icon: 'router', label: 'MAC-адрес', value: '00:19:C6:9D:2E:1F' },
+      { icon: 'calendar', label: 'Дата выдачи', value: '05.04.2024' },
     ],
     modem: MODEM_ZTE_Y50,
     ponMeasures: ponZteSeries(-21.6),
