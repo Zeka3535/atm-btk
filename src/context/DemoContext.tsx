@@ -32,6 +32,8 @@ function mergeTasksFromServer(local: DemoTask[], server: DemoTask[]): DemoTask[]
       isIzveschenie: cur.isIzveschenie,
       reportText: cur.reportText,
       reportDraft: cur.reportDraft,
+      reportPhotos: cur.reportPhotos,
+      reportDraftPhotos: cur.reportDraftPhotos,
       reportSentDay: cur.reportSentDay,
       history: cur.history,
       wifi: cur.wifi ?? next.wifi,
@@ -66,7 +68,7 @@ interface DemoContextValue {
   /** Обновление списка (pull / фон) — без тостов */
   refreshTasks: () => Promise<boolean>
   refreshing: boolean
-  sendReport: (id: string, text: string) => { ok: boolean; error?: string }
+  sendReport: (id: string, text: string, photos?: string[]) => { ok: boolean; error?: string }
   notifySound: boolean
   setNotifySound: (v: boolean) => void
   notifyVibrate: boolean
@@ -244,12 +246,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   )
 
   const sendReport = useCallback(
-    (id: string, text: string) => {
+    (id: string, text: string, photos: string[] = []) => {
       const task = tasks.find((t) => t.id === id)
       if (!task) return { ok: false, error: 'Заявка не найдена' }
       if (task.isClosed) return { ok: false, error: 'Заявка закрыта. Отчёт нельзя отправить' }
       const trimmed = text.trim()
       if (!trimmed) return { ok: false, error: 'Введите текст отчёта' }
+      const attached = photos.slice(0, 3)
       setTasks((prev) =>
         prev.map((t) =>
           t.id === id
@@ -257,6 +260,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
                 ...t,
                 reportText: trimmed,
                 reportDraft: '',
+                reportPhotos: attached,
+                reportDraftPhotos: [],
                 isSended: true,
                 isOtpisano: false,
                 isNew: false,

@@ -323,6 +323,34 @@ export function IconGoogleMaps(p: IconProps) {
   )
 }
 
+/** Камера */
+export function IconCamera(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12,12m-3.2,0a3.2,3.2 0,1 1,6.4,0a3.2,3.2 0,1 1,-6.4,0" />
+      <path d="M9,2L7.17,4H4C2.9,4 2,4.9 2,6v12c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2h-3.17L15,2H9zM12,17c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5 5,2.24 5,5 -2.24,5 -5,5z" />
+    </Svg>
+  )
+}
+
+/** Галерея / изображение */
+export function IconGallery(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M21,19V5c0,-1.1 -0.9,-2 -2,-2H5C3.9,3 3,3.9 3,5v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2zM8.5,13.5l2.5,3.01L14.5,12l4.5,6H5l3.5,-4.5z" />
+    </Svg>
+  )
+}
+
+/** Крестик закрытия */
+export function IconClose(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z" />
+    </Svg>
+  )
+}
+
 export function MetricGlyph({ name, size = 22 }: { name: MetricIcon; size?: number }) {
   switch (name) {
     case 'signal':

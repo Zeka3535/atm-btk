@@ -224,6 +224,10 @@ export interface DemoTask {
   isIzveschenie: boolean
   reportText: string
   reportDraft: string
+  /** Фото отчёта (data URL), до 3 */
+  reportPhotos?: string[]
+  /** Черновик фото до отправки */
+  reportDraftPhotos?: string[]
   /** День отправки yyyyMMdd или '' */
   reportSentDay: string
   statusNote?: string

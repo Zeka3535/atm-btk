@@ -31,7 +31,8 @@
   );
   /* Телефон / планшет; широкий ПК-каркас — позже */
   --app-max: 540px;
-  font-family: system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;
+  /* Manrope — как в Stitch/PWA (подключён в index.html); иначе на ПК уезжает в Segoe UI */
+  font-family: 'Manrope', system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;
   line-height: 1.4;
   color: var(--btk-text);
   background: var(--btk-bg);
@@ -2191,7 +2192,7 @@ html.modal-open .device-screen {
 
 .report-area:focus {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--btk-accent);
+  box-shadow: inset 0 0 0 1.5px rgba(102, 52, 121, 0.45), 0 0 0 3px rgba(102, 52, 121, 0.1);
 }
 
 .report-meta {
@@ -2199,6 +2200,96 @@ html.modal-open .device-screen {
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
+}
+
+.report-photos-block {
+  margin-top: 14px;
+}
+
+.report-photos-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.report-photos-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--btk-ink, #2a1f33);
+}
+
+.report-photos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-photo-tile {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--btk-bg);
+  box-shadow: inset 0 0 0 1px rgba(102, 52, 121, 0.12);
+}
+
+.report-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.report-photo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(42, 31, 51, 0.72);
+  color: #fff;
+  cursor: pointer;
+}
+
+.report-photo-add {
+  width: 76px;
+  height: 76px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(102, 52, 121, 0.35);
+  background: rgba(102, 52, 121, 0.04);
+  color: var(--btk-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.report-photo-add:active {
+  background: rgba(102, 52, 121, 0.1);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Как ForegroundColorSpan RED в BtkReportDraft */
