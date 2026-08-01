@@ -59,6 +59,386 @@ html {
   -ms-overflow-style: none;
 }
 
+/* ── Виртуальный Samsung Galaxy (демо на широком ПК) ── */
+.device-stage {
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+}
+
+.device-phone {
+  width: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
+}
+
+.device-bezel,
+.device-screen-clip {
+  width: 100%;
+  min-height: inherit;
+}
+
+.device-screen {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--btk-bg);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.device-screen::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.device-btn,
+.device-punch,
+.oneui-statusbar {
+  display: none;
+}
+
+/* One UI: SamsungOne с устройства, иначе Roboto (латиница One UI) */
+@font-face {
+  font-family: 'SamsungOne';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    local('SamsungOne-500'),
+    local('SamsungOne'),
+    local('OneUISans'),
+    local('sec-roboto-light'),
+    url('./assets/fonts/roboto-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'SamsungOne';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    local('SamsungOne-600'),
+    local('SamsungOne'),
+    local('OneUISans'),
+    local('sec'),
+    url('./assets/fonts/roboto-latin-600.woff2') format('woff2');
+}
+
+@media (min-width: 900px) {
+  html,
+  body,
+  #root {
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(102, 52, 121, 0.22), transparent 55%),
+      radial-gradient(900px 500px at 80% 100%, rgba(51, 206, 225, 0.14), transparent 50%),
+      linear-gradient(165deg, #e9e4ef 0%, #f5f3f7 42%, #ddd6e6 100%);
+    overflow: hidden;
+    height: 100%;
+    min-height: 100dvh;
+  }
+
+  .device-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    overflow: auto;
+  }
+
+  /*
+   * Логический экран 360×780 (как типичный Android viewport),
+   * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
+   */
+  .device-phone.device-samsung {
+    --screen-w: 360px;
+    --screen-h: 780px;
+    --ui-scale: 0.88;
+    --device-radius: 38px;
+    --device-bezel: 9px;
+    --clip-w: calc(var(--screen-w) * var(--ui-scale));
+    --clip-h: calc(var(--screen-h) * var(--ui-scale));
+    position: relative;
+    width: calc(var(--clip-w) + var(--device-bezel) * 2);
+    height: calc(var(--clip-h) + var(--device-bezel) * 2);
+    max-height: calc(100dvh - 40px);
+    min-height: 0;
+    flex-shrink: 0;
+    /* Если не влезает по высоте — пропорционально уменьшаем весь макет */
+    zoom: min(
+      1,
+      calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
+    );
+    filter: drop-shadow(0 26px 44px rgba(28, 27, 31, 0.26))
+      drop-shadow(0 8px 14px rgba(102, 52, 121, 0.14));
+  }
+
+  .device-samsung .device-bezel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: var(--device-radius);
+    padding: var(--device-bezel);
+    box-sizing: border-box;
+    /* Phantom Black / титан Galaxy */
+    background: linear-gradient(
+      160deg,
+      #5a5a5e 0%,
+      #2a2a2e 18%,
+      #121214 45%,
+      #1e1e22 70%,
+      #4a4a4e 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+      inset 0 0 0 2px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .device-samsung .device-screen-clip {
+    position: relative;
+    width: var(--clip-w);
+    height: var(--clip-h);
+    min-height: 0;
+    border-radius: calc(var(--device-radius) - 5px);
+    overflow: hidden;
+    /* Цвет тулбара — без белых «зазоров» в скруглениях */
+    background: var(--btk-primary);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+
+  .device-samsung .device-screen {
+    /* One UI: высота под крупные иконки статус-бара */
+    --safe-top: 38px;
+    --safe-bottom: 16px;
+    --toolbar-h: calc(66px + var(--safe-top));
+    --detail-chrome-h: calc(
+      var(--toolbar-h) + var(--detail-toolbar-tabs-gap) + var(--detail-tabs-h) +
+        var(--detail-tabs-card-gap)
+    );
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--screen-w);
+    height: var(--screen-h);
+    min-height: 0;
+    border-radius: 0;
+    overflow: hidden;
+    transform: scale(var(--ui-scale));
+    transform-origin: top left;
+    isolation: isolate;
+    background: var(--btk-primary);
+  }
+
+  /* Статус-бар One UI 7/8.5 */
+  .device-samsung .oneui-statusbar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 210;
+    height: var(--safe-top);
+    padding: 0 18px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+    pointer-events: none;
+  }
+
+  /* Как в шторке: path fill white @ 0.8 */
+  .oneui-clock {
+    position: relative;
+    z-index: 1;
+    display: block;
+    flex-shrink: 0;
+    font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .oneui-sb-right {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* LTE → сигнал → батарея */
+    gap: 4px;
+    height: 20px;
+  }
+
+  .oneui-ico {
+    display: block;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+
+  /* LTE + стрелки ~14×17 */
+  .oneui-ico-lte {
+    width: 14px;
+    height: 17px;
+  }
+
+  /* viewBox ~14×15.4 из шторки */
+  .oneui-ico-signal {
+    width: 15px;
+    height: 16px;
+  }
+
+  /* Пилюля 28×16.5 как path M395…423 */
+  .oneui-battery {
+    position: relative;
+    width: 28px;
+    height: 16.5px;
+    flex-shrink: 0;
+  }
+
+  .oneui-battery-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Чёрный % — как fill="black" у «69» в SVG шторки */
+  .oneui-battery-pct {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SamsungOne', 'sec', 'Roboto', system-ui, sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: #000;
+    pointer-events: none;
+  }
+
+  /* Явный отступ списка/настроек под fixed-тулбаром внутри макета */
+  .device-samsung .device-screen .page-list {
+    padding-top: calc(var(--toolbar-h) + 12px);
+  }
+
+  .device-samsung .device-screen .settings-page {
+    padding-top: calc(var(--toolbar-h) + 16px);
+  }
+
+  /*
+   * app-shell в цвет тулбара — заливает верхние скругления клипа;
+   * страницы рисуют свой светлый фон ниже шапки.
+   */
+  .device-samsung .device-screen .app-shell {
+    background: var(--btk-primary);
+  }
+
+  .device-samsung .device-screen .page-list,
+  .device-samsung .device-screen .detail-page,
+  .device-samsung .device-screen .settings-page {
+    background: var(--btk-bg);
+    min-height: 100%;
+    box-sizing: border-box;
+  }
+
+  .device-samsung .device-screen .login-shell {
+    background: var(--btk-bg);
+  }
+
+  /* Punch-hole камера по центру сверху (Samsung) */
+  .device-samsung .device-punch {
+    display: block;
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    z-index: 220;
+    width: 14px;
+    height: 14px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #1c2430 0%, #050608 62%, #000 100%);
+    box-shadow:
+      0 0 0 1.5px #0a0a0a,
+      0 0 0 2.5px rgba(40, 40, 44, 0.9),
+      inset 0 0 2px rgba(120, 160, 220, 0.25);
+    pointer-events: none;
+  }
+
+  .device-samsung .device-btn {
+    display: block;
+    position: absolute;
+    background: linear-gradient(180deg, #6a6a70, #2a2a2e 40%, #18181a);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  .device-samsung .device-btn-vol-up {
+    left: -3px;
+    top: 148px;
+    width: 3px;
+    height: 42px;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .device-samsung .device-btn-vol-down {
+    left: -3px;
+    top: 198px;
+    width: 3px;
+    height: 42px;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .device-samsung .device-btn-power {
+    right: -3px;
+    top: 190px;
+    width: 3px;
+    height: 64px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .device-screen .app-shell {
+    max-width: 100%;
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* скругление совпадает с клипом в логических px (clip_r / ui-scale) */
+    border-radius: calc((var(--device-radius) - 5px) / var(--ui-scale));
+  }
+
+  .device-screen .login-shell {
+    min-height: 100%;
+    height: 100%;
+  }
+
+  .device-screen .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92%;
+  }
+
+  .device-screen .modal-card-center {
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+  }
+}
+
 html::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -347,6 +727,88 @@ button {
   margin-bottom: 12px;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* Баннер установки PWA */
+.pwa-install-banner {
+  position: fixed;
+  left: max(12px, var(--safe-left));
+  right: max(12px, var(--safe-right));
+  bottom: calc(var(--nav-h) + 12px + var(--safe-bottom));
+  z-index: 46;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
+  background: var(--btk-surface);
+  border: 1px solid rgba(209, 201, 214, 0.55);
+  border-radius: 18px;
+  box-shadow: var(--btk-shadow-lg);
+  box-sizing: border-box;
+  animation: btk-snack-in 0.22s ease-out both;
+}
+
+/* Без острова навигации (логин, настройки) — ближе к низу */
+.device-screen:not(:has(.bottom-nav)) .pwa-install-banner {
+  bottom: calc(20px + var(--safe-bottom));
+}
+
+.pwa-install-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: #efe8f4;
+}
+
+.pwa-install-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-install-text strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--btk-primary);
+  line-height: 1.25;
+}
+
+.pwa-install-text p {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--btk-muted);
+}
+
+.pwa-install-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pwa-install-btn {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--btk-primary);
+  color: #fff;
+  border: none;
+}
+
+.pwa-install-later {
+  border: none;
+  background: transparent;
+  color: var(--btk-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
 }
 
 .bottom-nav {
@@ -660,12 +1122,12 @@ button {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   padding: calc(72px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
-  max-width: 440px;
   width: 100%;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   box-sizing: border-box;
   background: transparent;
   overflow-y: auto;

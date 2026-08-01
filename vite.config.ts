@@ -31,13 +31,17 @@ export default defineConfig({
         background_color: '#663479',
         display: 'standalone',
         display_override: ['standalone', 'minimal-ui'],
-        orientation: 'portrait-primary',
+        orientation: 'portrait',
         start_url: './',
         scope: './',
         lang: 'ru',
         dir: 'ltr',
         categories: ['business', 'productivity'],
         prefer_related_applications: false,
+        handle_links: 'preferred',
+        launch_handler: {
+          client_mode: 'navigate-existing',
+        },
         icons: [
           {
             src: 'icons/icon-192.png',

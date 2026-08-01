@@ -1,6 +1,8 @@
 import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { BtkToast } from './components/BtkToast'
+import { DeviceFrame } from './components/DeviceFrame'
 import { BottomNav } from './components/NavChrome'
+import { PwaInstallBanner } from './components/PwaInstallBanner'
 import { DemoProvider, useDemo } from './context/DemoContext'
 import { ClosedPage } from './pages/ClosedPage'
 import { LoginPage } from './pages/LoginPage'
@@ -24,17 +26,20 @@ export default function App() {
   return (
     <DemoProvider>
       <HashRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<RequireAuth />}>
-            <Route path="/" element={<Navigate to="/tasks" replace />} />
-            <Route path="/tasks" element={<TasksPage />} />
-            <Route path="/tasks/:id" element={<TaskDetailPage />} />
-            <Route path="/closed" element={<ClosedPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/tasks" replace />} />
-        </Routes>
+        <DeviceFrame>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/" element={<Navigate to="/tasks" replace />} />
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/tasks/:id" element={<TaskDetailPage />} />
+              <Route path="/closed" element={<ClosedPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/tasks" replace />} />
+          </Routes>
+          <PwaInstallBanner />
+        </DeviceFrame>
       </HashRouter>
     </DemoProvider>
   )

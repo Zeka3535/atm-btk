@@ -1,0 +1,108 @@
+import { useCallback, useEffect, useState } from 'react'
+import {
+  dismissInstallPrompt,
+  isInstallDismissed,
+  isIosDevice,
+  isPwaStandalone,
+  markInstallAccepted,
+  type BeforeInstallPromptEventLike,
+} from '../lib/pwa'
+
+/** Баннер: можно установить сайт как приложение */
+export function PwaInstallBanner() {
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEventLike | null>(null)
+  const [visible, setVisible] = useState(false)
+  const [iosHint, setIosHint] = useState(false)
+
+  const hide = useCallback((permanent = false) => {
+    dismissInstallPrompt(permanent)
+    setVisible(false)
+    setDeferred(null)
+  }, [])
+
+  useEffect(() => {
+    if (isPwaStandalone() || isInstallDismissed()) return
+
+    const onBip = (e: Event) => {
+      e.preventDefault()
+      setDeferred(e as BeforeInstallPromptEventLike)
+      setIosHint(false)
+      setVisible(true)
+    }
+
+    const onInstalled = () => {
+      markInstallAccepted()
+      setVisible(false)
+      setDeferred(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', onBip)
+    window.addEventListener('appinstalled', onInstalled)
+
+    let iosTimer = 0
+    if (isIosDevice()) {
+      setIosHint(true)
+      iosTimer = window.setTimeout(() => setVisible(true), 1400)
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBip)
+      window.removeEventListener('appinstalled', onInstalled)
+      if (iosTimer) window.clearTimeout(iosTimer)
+    }
+  }, [])
+
+  async function onInstall() {
+    if (!deferred) return
+    try {
+      await deferred.prompt()
+      const { outcome } = await deferred.userChoice
+      if (outcome === 'accepted') {
+        markInstallAccepted()
+      } else {
+        dismissInstallPrompt(false)
+      }
+    } catch {
+      dismissInstallPrompt(false)
+    }
+    setVisible(false)
+    setDeferred(null)
+  }
+
+  if (!visible) return null
+
+  return (
+    <aside className="pwa-install-banner" role="dialog" aria-label="Установка приложения">
+      <img
+        className="pwa-install-icon"
+        src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
+        alt=""
+        width={44}
+        height={44}
+      />
+      <div className="pwa-install-text">
+        <strong>Установите ATM БТК</strong>
+        <p>
+          {iosHint && !deferred
+            ? 'Поделиться → На экран «Домой» — приложение на главном экране.'
+            : 'Можно установить как приложение. Работает с главного экрана, без браузерной рамки.'}
+        </p>
+      </div>
+      <div className="pwa-install-actions">
+        {deferred ? (
+          <button type="button" className="btn btn-pill pwa-install-btn" onClick={() => void onInstall()}>
+            Установить
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="pwa-install-later"
+          onClick={() => hide(false)}
+          aria-label="Позже"
+        >
+          Позже
+        </button>
+      </div>
+    </aside>
+  )
+}

@@ -1,6 +1,7 @@
 import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { formatPhoneDisplay, linkifyPhones, telHref } from '../types'
+import { useDevicePortalRoot } from './DeviceFrame'
 
 /** Текст с tel:-ссылками (вызов на смартфоне) */
 export function LinkedText({ text, className }: { text: string; className?: string }) {
@@ -140,6 +141,8 @@ export function Modal({
     endDrag(dismiss)
   }
 
+  const portalRoot = useDevicePortalRoot()
+
   if (!open) return null
 
   const dragHandlers = {
@@ -183,7 +186,7 @@ export function Modal({
         {children}
       </div>
     </div>,
-    document.body,
+    portalRoot ?? document.body,
   )
 }
 
