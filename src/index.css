@@ -1067,9 +1067,9 @@ button {
   background: var(--btk-primary);
 }
 
-/* Индивидуальный тумблер (порт DSLAM) — бирюзовый как раньше */
+/* Индивидуальный тумблер (порт DSLAM) — зелёный при включении */
 .toggle-accent.on {
-  background: var(--btk-accent);
+  background: var(--btk-closed);
 }
 
 .toggle.disabled {
