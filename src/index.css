@@ -1259,11 +1259,11 @@ button {
   justify-content: center;
   gap: 8px;
   border: none;
-  background: var(--btk-accent);
-  color: #083344;
-  border-radius: 14px;
-  padding: 12px 14px;
-  font-weight: 700;
+  background: var(--btk-primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 600;
   font-size: 0.95rem;
   flex-shrink: 0;
 }
