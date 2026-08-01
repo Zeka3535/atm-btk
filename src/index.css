@@ -742,9 +742,11 @@ button {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
   border: 1px solid rgba(209, 201, 214, 0.55);
   border-radius: 15px;
   box-shadow: var(--btk-shadow-lg);
@@ -826,12 +828,12 @@ button {
 @keyframes pwa-install-in {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-8px) translateZ(0);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
@@ -845,7 +847,7 @@ button {
   min-width: 128px;
   margin-inline: auto;
   height: auto;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 40px;
@@ -857,6 +859,8 @@ button {
   padding: 6px;
   z-index: 40;
   box-sizing: border-box;
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
 }
 
 .nav-item {
@@ -960,11 +964,12 @@ button {
   top: calc(var(--safe-top) + 12px);
   width: max-content;
   max-width: min(var(--app-max), calc(100% - 32px - var(--safe-left) - var(--safe-right)));
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
+  will-change: transform, backdrop-filter;
   z-index: 60;
   box-sizing: border-box;
   padding: 10px 16px;
-  background: rgba(26, 18, 32, 0.75);
+  background: rgba(26, 18, 32, 0.6);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color: #fff;
@@ -1487,7 +1492,7 @@ button {
   max-width: 100%;
   margin: 0;
   padding: 10px 16px 12px;
-  background: rgba(102, 52, 121, 0.85);
+  background: rgba(102, 52, 121, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 0 0 16px 16px;
@@ -1496,7 +1501,8 @@ button {
   position: fixed;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
+  will-change: transform, backdrop-filter;
   z-index: 50;
   box-shadow: 0 6px 20px rgba(102, 52, 121, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
