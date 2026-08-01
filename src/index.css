@@ -208,8 +208,8 @@ html {
     min-height: 0;
     border-radius: calc(var(--device-radius) - 5px);
     overflow: hidden;
-    /* Цвет тулбара — без белых «зазоров» в скруглениях */
-    background: var(--btk-primary);
+    /* Как theme-color в PWA — меняется при модалке (#3d1f49) */
+    background: var(--btk-status);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   }
 
@@ -233,7 +233,7 @@ html {
     transform: scale(var(--ui-scale));
     transform-origin: top left;
     isolation: isolate;
-    background: var(--btk-primary);
+    background: var(--btk-status);
   }
 
   /* Статус-бар One UI 7/8.5 */
@@ -251,6 +251,8 @@ html {
     justify-content: space-between;
     color: #fff;
     pointer-events: none;
+    background: var(--btk-status);
+    transition: background-color 0.2s ease;
   }
 
   /* Как в шторке: path fill white @ 0.8 */
@@ -339,11 +341,11 @@ html {
   }
 
   /*
-   * app-shell в цвет тулбара — заливает верхние скругления клипа;
+   * app-shell в цвет статус-панели — заливает верхние скругления клипа;
    * страницы рисуют свой светлый фон ниже шапки.
    */
   .device-samsung .device-screen .app-shell {
-    background: var(--btk-primary);
+    background: var(--btk-status);
   }
 
   .device-samsung .device-screen .page-list,

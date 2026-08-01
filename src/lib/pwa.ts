@@ -1,6 +1,8 @@
 /** Настройки PWA: портрет, цвет системной панели, установка */
 
 export const PWA_THEME = '#663479'
+/** Цвет системной панели при открытой модалке */
+export const PWA_THEME_MODAL = '#3d1f49'
 
 export type BeforeInstallPromptEventLike = Event & {
   prompt: () => Promise<void>
@@ -17,7 +19,10 @@ export function setupPwaChrome() {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      applyThemeColor(PWA_THEME)
+      /* Не сбрасывать тёмный цвет, пока открыта модалка */
+      if (!document.querySelector('.modal-backdrop')) {
+        applyThemeColor(PWA_THEME)
+      }
       void lockPortrait()
     }
   })
