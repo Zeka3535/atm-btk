@@ -158,7 +158,7 @@ html {
   .device-phone.device-samsung {
     --screen-w: 384px;
     --screen-h: 854px;
-    --ui-scale: 1;
+    --ui-scale: 0.85;
     --device-radius: 38px;
     --device-bezel: 9px;
     --clip-w: calc(var(--screen-w) * var(--ui-scale));
