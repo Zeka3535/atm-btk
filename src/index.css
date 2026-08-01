@@ -152,24 +152,28 @@ html {
   }
 
   /*
-   * Логический экран 390×844 (как современные смартфоны),
-   * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
+   * Логический экран 390×844, визуально --ui-scale.
+   * zoom на .device-screen держит position:fixed внутри рамки.
    */
   .device-phone.device-samsung {
     --screen-w: 390px;
     --screen-h: 844px;
+    --ui-scale: 0.8;
     --device-radius: 38px;
     --device-bezel: 9px;
+    --clip-w: calc(var(--screen-w) * var(--ui-scale));
+    --clip-h: calc(var(--screen-h) * var(--ui-scale));
     position: relative;
-    /*
-     * Без zoom/transform на корпусе и экране: оба ломают backdrop-filter
-     * («стекло») у острова и вкладок. Масштаб — только через размер сцены.
-     */
-    width: calc(var(--screen-w) + var(--device-bezel) * 2);
-    height: calc(var(--screen-h) + var(--device-bezel) * 2);
-    max-height: none;
+    width: calc(var(--clip-w) + var(--device-bezel) * 2);
+    height: calc(var(--clip-h) + var(--device-bezel) * 2);
+    max-height: calc(100dvh - 40px);
     min-height: 0;
     flex-shrink: 0;
+    /* Вписать корпус в высоту окна, если не хватает */
+    zoom: min(
+      1,
+      calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
+    );
   }
 
   .device-samsung .device-bezel {
@@ -199,14 +203,10 @@ html {
 
   .device-samsung .device-screen-clip {
     position: relative;
-    width: var(--screen-w);
-    height: var(--screen-h);
+    width: var(--clip-w);
+    height: var(--clip-h);
     min-height: 0;
-    /*
-     * Без border-radius: overflow+radius на предке ломает backdrop-filter
-     * у острова/вкладок. Скругление даёт рамка .device-bezel.
-     */
-    border-radius: 0;
+    border-radius: calc(var(--device-radius) - 5px);
     overflow: hidden;
     /* Как theme-color в PWA — меняется при модалке (#3d1f49) */
     background: var(--btk-status);
@@ -223,12 +223,20 @@ html {
         var(--detail-tabs-card-gap)
     );
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    width: var(--screen-w);
+    height: var(--screen-h);
     min-height: 0;
     border-radius: 0;
     overflow: hidden;
+    /*
+     * scale создаёт containing block для position:fixed —
+     * тулбар/остров/статус остаются в рамке. zoom в Chrome это больше не даёт.
+     * backdrop-filter внутри ломается — см. плотный фон у .bottom-nav ниже.
+     */
+    transform: scale(var(--ui-scale));
+    transform-origin: 0 0;
     background: var(--btk-status);
   }
 
@@ -415,8 +423,8 @@ html {
     margin: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    /* Радиус только у .device-screen-clip — иначе overflow+radius ломает backdrop-filter */
-    border-radius: 0;
+    /* скругление в логических px (clip_r / ui-scale) */
+    border-radius: calc((var(--device-radius) - 5px) / var(--ui-scale));
   }
 
   .device-screen .login-shell {
@@ -433,6 +441,19 @@ html {
   .device-screen .modal-card-center {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
+  }
+
+  /* В макете scale ломает backdrop-filter — плотный фон вместо blur */
+  .device-screen .bottom-nav {
+    background: rgba(255, 255, 255, 0.88);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .device-screen .detail-sticky-chrome .tab:not(.on) {
+    background: rgba(231, 224, 236, 0.92);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 
