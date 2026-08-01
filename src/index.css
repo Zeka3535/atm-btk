@@ -732,8 +732,10 @@ button {
 /* Баннер установки PWA */
 .pwa-install-banner {
   position: fixed;
-  left: max(12px, var(--safe-left));
-  right: max(12px, var(--safe-right));
+  left: max(16px, var(--safe-left));
+  right: max(16px, var(--safe-right));
+  margin: 0 auto;
+  max-width: calc(var(--app-max) - 32px);
   bottom: calc(var(--nav-h) + 12px + var(--safe-bottom));
   z-index: 46;
   display: flex;
@@ -813,8 +815,8 @@ button {
 
 /* В макете смартфона баннер привязан к границам логического экрана. */
 .device-samsung .pwa-install-banner {
-  left: 12px;
-  right: 12px;
+  left: 16px;
+  right: 16px;
   width: auto;
   margin: 0;
 }
