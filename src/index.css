@@ -893,7 +893,7 @@ button {
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--btk-primary);
+  background: #8b4a9e;
   color: #fff;
   font-size: 0.6rem;
   font-weight: 800;
