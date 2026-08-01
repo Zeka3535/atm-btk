@@ -3,7 +3,18 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 const THRESHOLD = 68
 const MAX_PULL = 112
 
-function scrollTop() {
+/** Скролл окна или .app-shell (в iframe-макете крутится shell) */
+function getScrollTop(): number {
+  const shell = document.querySelector('.app-shell') as HTMLElement | null
+  if (shell) {
+    const oy = getComputedStyle(shell).overflowY
+    if (
+      (oy === 'auto' || oy === 'scroll' || oy === 'overlay') &&
+      shell.scrollHeight > shell.clientHeight + 1
+    ) {
+      return shell.scrollTop
+    }
+  }
   return window.scrollY || document.documentElement.scrollTop || 0
 }
 
@@ -44,14 +55,14 @@ export function PullToRefresh({
 
   const beginPull = (clientY: number) => {
     if (disabled || refreshingRef.current) return
-    if (scrollTop() > 1) return
+    if (getScrollTop() > 1) return
     startY.current = clientY
     pulling.current = true
   }
 
   const movePull = (clientY: number, e?: Event) => {
     if (!pulling.current || disabled || refreshingRef.current) return
-    if (scrollTop() > 1 && pullRef.current === 0) {
+    if (getScrollTop() > 1 && pullRef.current === 0) {
       pulling.current = false
       return
     }
@@ -62,6 +73,7 @@ export function PullToRefresh({
     }
     const next = Math.min(MAX_PULL, dy * 0.42)
     setPull(next)
+    /* Блокируем системный жест, пока тянем свой PTR */
     if (next > 8 && e) e.preventDefault()
   }
 

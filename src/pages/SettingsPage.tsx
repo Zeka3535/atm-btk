@@ -39,6 +39,8 @@ export function SettingsPage() {
     setNotifySound,
     notifyVibrate,
     setNotifyVibrate,
+    blockSystemRefresh,
+    setBlockSystemRefresh,
     logout,
     demoNotifyNewTask,
   } = useDemo()
@@ -100,6 +102,23 @@ export function SettingsPage() {
             </button>
           </>
         )}
+      </section>
+
+      <section className="card settings-group">
+        <h2 className="settings-group-title">Жесты</h2>
+        <div className="switch-row">
+          <div>
+            <strong>Блокировать обновление страницы</strong>
+            <div className="muted">
+              Системный жест браузера. Свайп вниз по списку заявок по-прежнему обновляет заявки.
+            </div>
+          </div>
+          <Toggle
+            label="Блокировать обновление страницы"
+            checked={blockSystemRefresh}
+            onChange={setBlockSystemRefresh}
+          />
+        </div>
       </section>
 
       <section className="card settings-group">

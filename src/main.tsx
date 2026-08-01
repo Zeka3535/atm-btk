@@ -11,6 +11,11 @@ if (isDeviceEmbed()) {
   document.documentElement.classList.add('device-embed')
 }
 
+/* Системный pull-to-refresh выкл. по умолчанию (настройка в Settings) */
+if (localStorage.getItem('atm_pwa_block_system_refresh') !== '0') {
+  document.documentElement.classList.add('block-system-refresh')
+}
+
 setupPwaChrome()
 /* Сразу подхватываем новый билд — иначе Pages/PWA держат старый CSS (404 на hash) */
 registerSW({

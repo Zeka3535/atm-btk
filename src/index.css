@@ -480,6 +480,16 @@ body {
   overscroll-behavior-x: none;
 }
 
+/* Системный pull-to-refresh браузера (настройка в Settings) */
+html.block-system-refresh,
+html.block-system-refresh body {
+  overscroll-behavior-y: none;
+}
+
+html.block-system-refresh .app-shell {
+  overscroll-behavior-y: none;
+}
+
 .app-shell,
 .page,
 .page-list,
@@ -615,8 +625,8 @@ button {
 
 .field input:focus {
   outline: none;
-  border-color: var(--btk-accent);
-  box-shadow: 0 0 0 3px rgba(51, 206, 225, 0.15);
+  border-color: var(--btk-primary);
+  box-shadow: 0 0 0 3px rgba(102, 52, 121, 0.18);
 }
 
 .field-control {
@@ -632,6 +642,11 @@ button {
   color: var(--btk-muted);
   display: inline-flex;
   pointer-events: none;
+}
+
+.field-control:focus-within .field-ico,
+.field-control:focus-within .field-trail {
+  color: var(--btk-primary);
 }
 
 .field-control input {

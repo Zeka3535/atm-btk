@@ -73,6 +73,9 @@ interface DemoContextValue {
   setNotifyVibrate: (v: boolean) => void
   notifyEnabled: boolean
   setNotifyEnabled: (v: boolean) => void
+  /** Блокировать системный жест обновления страницы (браузер) */
+  blockSystemRefresh: boolean
+  setBlockSystemRefresh: (v: boolean) => void
   /** Тест: in-app snackbar + системное уведомление */
   demoNotifyNewTask: (address?: string) => Promise<void>
   toast: ToastPayload | null
@@ -88,6 +91,7 @@ const OFFLINE_KEY = 'atm_pwa_offline'
 const NOTIFY_KEY = 'atm_pwa_notify'
 const SOUND_KEY = 'atm_pwa_notify_sound'
 const VIBRATE_KEY = 'atm_pwa_notify_vibrate'
+const BLOCK_REFRESH_KEY = 'atm_pwa_block_system_refresh'
 
 function capitalizeSnack(msg: string): string {
   const t = msg.trim()
@@ -116,9 +120,16 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [notifySound, setNotifySoundState] = useState(() => localStorage.getItem(SOUND_KEY) !== '0')
   const [notifyVibrate, setNotifyVibrateState] = useState(() => localStorage.getItem(VIBRATE_KEY) !== '0')
   const [notifyEnabled, setNotifyEnabledState] = useState(() => localStorage.getItem(NOTIFY_KEY) !== '0')
+  const [blockSystemRefresh, setBlockSystemRefreshState] = useState(
+    () => localStorage.getItem(BLOCK_REFRESH_KEY) !== '0',
+  )
   const [toast, setToast] = useState<ToastPayload | null>(null)
   const offlineRef = useRef(offline)
   offlineRef.current = offline
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('block-system-refresh', blockSystemRefresh)
+  }, [blockSystemRefresh])
 
   const login = useCallback((loginName: string) => {
     if (!loginName.trim()) return
@@ -212,6 +223,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setNotifyVibrateState(v)
   }, [])
 
+  const setBlockSystemRefresh = useCallback((v: boolean) => {
+    localStorage.setItem(BLOCK_REFRESH_KEY, v ? '1' : '0')
+    setBlockSystemRefreshState(v)
+  }, [])
+
   const demoNotifyNewTask = useCallback(
     async (address = 'Г. Брест, ул. Московская, 45') => {
       if (!notifyEnabled) {
@@ -287,6 +303,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       setNotifyVibrate,
       notifyEnabled,
       setNotifyEnabled,
+      blockSystemRefresh,
+      setBlockSystemRefresh,
       demoNotifyNewTask,
       toast,
       showToast,
@@ -313,6 +331,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       setNotifyVibrate,
       notifyEnabled,
       setNotifyEnabled,
+      blockSystemRefresh,
+      setBlockSystemRefresh,
       demoNotifyNewTask,
       toast,
       showToast,
