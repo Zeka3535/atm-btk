@@ -1948,31 +1948,32 @@ html.modal-open .device-screen .app-shell {
   background-color: #3d1f49;
 }
 
-/* Текст/иконки тулбара чёткие; фон — отдельный задний слой ниже */
 html.modal-open .toolbar,
 html.modal-open .oneui-statusbar {
-  background: transparent !important;
+  background: #3d1f49;
   filter: none !important;
 }
 
 /*
- * Задний слой верхней панели: скругления + размытие контента под ним.
- * (toolbar выше по z-index — сам не размывается)
+ * Прямоугольная подложка под скруглённым тулбаром:
+ * если скруглить и её — в углах снова белый фон списка.
  */
-html.modal-open .app-shell:has(.toolbar)::after {
+html.modal-open .app-shell:has(.toolbar)::after,
+html.modal-open .device-screen:has(.toolbar)::after {
   content: '';
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%) translateZ(0);
-  width: min(var(--app-max), 100%);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none;
   height: var(--toolbar-h);
-  background: rgba(61, 31, 73, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 0 0 16px 16px;
+  margin: 0;
+  background: #3d1f49;
+  border-radius: 0;
   z-index: 49;
   pointer-events: none;
+  transform: none;
 }
 
 /*
