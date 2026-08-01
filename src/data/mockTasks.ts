@@ -574,7 +574,7 @@ export const MOCK_TASKS: DemoTask[] = [
   },
   {
     id: 'D4',
-    period: 'until17',
+    period: 'morning',
     periodLabel: '9:00 - 13:00',
     dateLabel: 'Сегодня',
     address: 'БРЕСТ Г., ОРЛОВСКАЯ УЛ., Д. 12, КВ. 7',
@@ -624,7 +624,7 @@ export const MOCK_TASKS: DemoTask[] = [
   },
   {
     id: 'D5',
-    period: 'until17',
+    period: 'morning',
     periodLabel: '9:00 - 13:00',
     dateLabel: 'Сегодня',
     address: 'БРЕСТ Г., ПИОНЕРСКАЯ УЛ., Д. 28, КВ. 14',
@@ -765,31 +765,4 @@ export const MOCK_TASKS: DemoTask[] = [
   },
 ]
 
-const PERIOD_ORDER: Record<string, number> = {
-  morning: 0,
-  until17: 1,
-  evening: 2,
-}
-
-export function isReportSentToday(t: DemoTask): boolean {
-  return t.isSended && t.reportSentDay === todayYmd()
-}
-
-export function sortIncoming(tasks: DemoTask[]): DemoTask[] {
-  const open = tasks.filter((t) => !t.isClosed)
-  const active = open.map((t) => {
-    if (t.isSended && t.reportSentDay && t.reportSentDay !== todayYmd()) {
-      return { ...t, isSended: false }
-    }
-    return t
-  })
-  const reported = active.filter((t) => isReportSentToday(t))
-  const rest = active.filter((t) => !isReportSentToday(t))
-  rest.sort((a, b) => PERIOD_ORDER[a.period] - PERIOD_ORDER[b.period])
-  return [...rest, ...reported]
-}
-
-/** Только окончательно закрытые */
-export function closedTasks(tasks: DemoTask[]): DemoTask[] {
-  return tasks.filter((t) => t.isClosed)
-}
+export { closedTasks, isReportSentToday, periodRank, sortIncoming } from '../lib/taskListOrder'
