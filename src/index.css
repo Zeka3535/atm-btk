@@ -1968,10 +1968,14 @@ html.modal-open .oneui-statusbar {
   filter: none !important;
 }
 
-html.modal-open .device-screen,
-html.modal-open .device-screen-clip,
-html.modal-open .device-screen .app-shell {
-  background-color: #3d1f49;
+html.modal-open .app-shell,
+html.modal-open .oneui-statusbar {
+  pointer-events: none;
+}
+
+html.modal-open .modal-backdrop,
+html.modal-open .modal-backdrop * {
+  pointer-events: auto;
 }
 
 /* Размываем контент под тулбаром + вкладки деталки */
@@ -1983,6 +1987,19 @@ html.modal-open .login-screen,
 html.modal-open .bottom-nav,
 html.modal-open .pwa-install-banner {
   filter: blur(6px);
+}
+
+html.modal-open .detail-sticky-chrome .tabs-scroll {
+  background: rgba(245, 243, 247, 0.22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+}
+
+html.modal-open .bottom-nav {
+  background: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 html.modal-open .app-shell,
