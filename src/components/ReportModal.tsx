@@ -248,7 +248,7 @@ export function ReportModal({ taskId, onClose }: Props) {
           Отмена
         </button>
         <button type="button" className="btn btn-send" onClick={onSend}>
-          Послать
+          Отправить
         </button>
       </div>
     </Modal>
