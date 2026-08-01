@@ -2,6 +2,7 @@ import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useR
 import { createPortal } from 'react-dom'
 import { formatPhoneDisplay, linkifyPhones, telHref } from '../types'
 import { useDevicePortalRoot } from './DeviceFrame'
+import { applyThemeColor, PWA_THEME } from '../lib/pwa'
 
 /** Текст с tel:-ссылками (вызов на смартфоне) */
 export function LinkedText({ text, className }: { text: string; className?: string }) {
@@ -61,10 +62,12 @@ export function Modal({
 
   useEffect(() => {
     if (!open) return
+    applyThemeColor('#3d1f49')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
+      applyThemeColor(PWA_THEME)
     }
   }, [open])
 
