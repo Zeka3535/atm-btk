@@ -8,6 +8,7 @@ import {
   IconCloudOff,
   IconModem,
   IconRouter,
+  IconSettings,
   IconTv,
   IconUser,
   IconWifi,
@@ -461,8 +462,14 @@ function WifiStatusRow({
         <strong>{ssid?.trim() || 'Сеть не задана'}</strong>
         {statusLabel && <div className="stitch-svc-tariff">{statusLabel}</div>}
       </div>
-      <button type="button" className="stitch-svc-setup" onClick={onWifi}>
-        Настроить
+      <button
+        type="button"
+        className="stitch-svc-setup"
+        onClick={onWifi}
+        aria-label="Настроить"
+        title="Настроить"
+      >
+        <IconSettings size={20} />
       </button>
     </li>
   )

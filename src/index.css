@@ -1962,8 +1962,8 @@ html.device-embed .modal-backdrop {
 }
 
 /*
- * Тулбар поверх оверлея (скругления не трогаем).
- * Остров и вкладки сохраняют glass (backdrop-filter) — не вешаем filter:blur на них.
+ * Тулбар поверх оверлея без blur (скругления/цвет статус-бара).
+ * Вкладки деталки при модалке тоже размываются.
  * Клики по фону: inert + pointer-events !important.
  */
 html.modal-open .toolbar {
@@ -1990,6 +1990,15 @@ html.modal-open .detail-sticky-chrome .toolbar {
   filter: none !important;
 }
 
+html.modal-open .detail-sticky-chrome .tabs-scroll {
+  filter: blur(6px) !important;
+}
+
+html.modal-open .detail-sticky-chrome .tab {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 html.modal-open .oneui-statusbar {
   background: #3d1f49;
   filter: none !important;
@@ -2014,7 +2023,7 @@ html.modal-open .modal-backdrop .modal-card * {
   pointer-events: auto !important;
 }
 
-/* Размываем только контент страницы, не chrome со «стеклом» */
+/* Размываем контент страницы (тулбар остаётся чётким) */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
 html.modal-open .settings-page > :not(.toolbar),
@@ -4115,15 +4124,16 @@ html.modal-open .device-screen {
 
 .stitch-svc-setup {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: 1.5px solid var(--btk-primary);
   background: transparent;
   color: var(--btk-primary);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 800;
-  white-space: nowrap;
+  border-radius: 50%;
 }
 
 .stitch-svc-setup:active {
