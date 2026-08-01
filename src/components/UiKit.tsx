@@ -73,15 +73,21 @@ export function Modal({
     document.documentElement.classList.add('modal-open')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    /* inert — надёжнее CSS pointer-events: фон под модалкой не кликается */
-    const shells = Array.from(
-      document.querySelectorAll<HTMLElement>('.app-shell, .login-shell, .pwa-install-banner'),
+    /* inert — надёжнее pointer-events: дети с auto всё равно ловят клики */
+    const blocked = Array.from(
+      document.querySelectorAll<HTMLElement>('.app-shell, .pwa-install-banner, .login-shell'),
     )
-    shells.forEach((el) => el.setAttribute('inert', ''))
+    for (const el of blocked) {
+      el.setAttribute('inert', '')
+      el.setAttribute('aria-hidden', 'true')
+    }
     return () => {
       document.documentElement.classList.remove('modal-open')
       document.body.style.overflow = prev
-      shells.forEach((el) => el.removeAttribute('inert'))
+      for (const el of blocked) {
+        el.removeAttribute('inert')
+        el.removeAttribute('aria-hidden')
+      }
       applyThemeColor(PWA_THEME)
     }
   }, [open])

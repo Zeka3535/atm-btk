@@ -154,7 +154,6 @@ html {
   /*
    * Логический экран 390×844 (как современные смартфоны),
    * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
-   * zoom на .device-screen обязателен: иначе position:fixed уезжает из рамки.
    */
   .device-phone.device-samsung {
     --screen-w: 390px;
@@ -175,6 +174,8 @@ html {
       1,
       calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
     );
+    filter: drop-shadow(0 26px 44px rgba(28, 27, 31, 0.26))
+      drop-shadow(0 8px 14px rgba(102, 52, 121, 0.14));
   }
 
   .device-samsung .device-bezel {
@@ -195,8 +196,6 @@ html {
       #4a4a4e 100%
     );
     box-shadow:
-      0 26px 44px rgba(28, 27, 31, 0.26),
-      0 8px 14px rgba(102, 52, 121, 0.14),
       inset 0 0 0 1px rgba(255, 255, 255, 0.16),
       inset 0 0 0 2px rgba(0, 0, 0, 0.55),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -231,8 +230,9 @@ html {
     min-height: 0;
     border-radius: 0;
     overflow: hidden;
-    /* zoom держит fixed (тулбар/остров) внутри экрана; transform:scale ломает макет сильнее */
-    zoom: var(--ui-scale);
+    transform: scale(var(--ui-scale));
+    transform-origin: top left;
+    isolation: isolate;
     background: var(--btk-status);
   }
 
@@ -437,15 +437,6 @@ html {
   .device-screen .modal-card-center {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
-  }
-
-  /* В макете zoom ломает backdrop-filter — более плотный фон вместо blur */
-  .device-screen .bottom-nav {
-    background: rgba(255, 255, 255, 0.88);
-  }
-
-  .device-screen .detail-sticky-chrome .tab:not(.on) {
-    background: rgba(231, 224, 236, 0.92);
   }
 }
 
@@ -854,10 +845,10 @@ button {
   min-width: 128px;
   margin-inline: auto;
   height: auto;
-  background: rgba(255, 255, 255, 0.62);
-  backdrop-filter: saturate(1.2) blur(16px);
-  -webkit-backdrop-filter: saturate(1.2) blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 40px;
   box-shadow: 0 10px 32px rgba(102, 52, 121, 0.24);
   display: flex;
@@ -1380,12 +1371,12 @@ button {
 .detail-sticky-chrome {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 50;
   width: min(var(--app-max), 100%);
   max-width: 100%;
-  margin-inline: auto;
+  margin: 0;
   padding-bottom: 0;
   background: transparent;
   box-shadow: none;
@@ -1417,9 +1408,9 @@ button {
 
 /* Неактивные вкладки — лёгкая прозрачность + blur */
 .detail-sticky-chrome .tab:not(.on) {
-  background: rgba(231, 224, 236, 0.62);
-  backdrop-filter: saturate(1.15) blur(14px);
-  -webkit-backdrop-filter: saturate(1.15) blur(14px);
+  background: rgba(231, 224, 236, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: rgba(102, 52, 121, 0.85);
   box-shadow: none;
 }
@@ -1503,7 +1494,7 @@ button {
   gap: 12px;
   width: min(var(--app-max), 100%);
   max-width: 100%;
-  margin-inline: auto;
+  margin: 0;
   padding: 10px 16px 12px;
   background: var(--btk-primary);
   border-radius: 0 0 16px 16px;
@@ -1511,8 +1502,8 @@ button {
   box-sizing: border-box;
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 50;
   box-shadow: 0 6px 20px rgba(102, 52, 121, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
@@ -1939,15 +1930,12 @@ button {
   /* Доп. блюр там, где backdrop-filter живой */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  /* Выше тулбара/статус-бара/острова — фон под модалкой не кликается */
-  z-index: 300;
+  z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding: 0;
   box-sizing: border-box;
-  pointer-events: auto;
-  touch-action: none;
 }
 
 /* В макете оверлей ниже One UI статус-бара */
@@ -1956,64 +1944,73 @@ button {
 }
 
 /*
- * Верхняя панель поверх затемнения — ровный #3d1f49 без «затемнения».
- * Вкладки и остров остаются под оверлеем и размываются.
+ * Тулбар поверх оверлея (скругления не трогаем): в углах виден тёмный backdrop.
+ * Вкладки / остров размываются через filter (backdrop-filter в PWA ненадёжен).
+ * Клики по фону режет inert на .app-shell + pointer-events !important на chrome.
  */
 html.modal-open .toolbar {
-  z-index: 320;
+  z-index: 110;
   pointer-events: none !important;
   filter: none !important;
-  background: #3d1f49 !important;
-  box-shadow: 0 6px 20px rgba(61, 31, 73, 0.35);
+  background: #3d1f49;
 }
 
 html.modal-open .detail-sticky-chrome {
-  z-index: 320;
+  z-index: 110;
   pointer-events: none !important;
-  background: transparent;
+}
+
+html.modal-open .detail-sticky-chrome .toolbar,
+html.modal-open .detail-sticky-chrome .tabs-scroll,
+html.modal-open .detail-sticky-chrome .tab,
+html.modal-open .detail-sticky-chrome a,
+html.modal-open .detail-sticky-chrome button {
+  pointer-events: none !important;
 }
 
 html.modal-open .detail-sticky-chrome .toolbar {
   filter: none !important;
-  background: #3d1f49 !important;
 }
 
 html.modal-open .oneui-statusbar {
-  z-index: 321;
-  background: #3d1f49 !important;
+  background: #3d1f49;
   filter: none !important;
   pointer-events: none !important;
 }
 
 html.modal-open .app-shell,
+html.modal-open .app-shell *,
 html.modal-open .login-shell,
+html.modal-open .login-shell *,
 html.modal-open .pwa-install-banner,
-html.modal-open .bottom-nav {
+html.modal-open .pwa-install-banner * {
   pointer-events: none !important;
 }
 
-html.modal-open .modal-backdrop,
-html.modal-open .modal-backdrop * {
+html.modal-open .modal-backdrop {
   pointer-events: auto !important;
 }
 
-/* Размываем контент и остров под модалкой */
+html.modal-open .modal-backdrop .modal-card,
+html.modal-open .modal-backdrop .modal-card * {
+  pointer-events: auto !important;
+}
+
+/* Размываем контент, вкладки деталки и нижний остров */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
+html.modal-open .detail-sticky-chrome .tabs-scroll,
 html.modal-open .settings-page > :not(.toolbar),
 html.modal-open .login-screen,
 html.modal-open .bottom-nav,
 html.modal-open .pwa-install-banner {
-  filter: blur(7px);
+  filter: blur(6px) !important;
 }
 
-/* Вкладки над затемнением: сами размыты + лёгкая вуаль, тулбар остаётся #3d1f49 */
-html.modal-open .detail-sticky-chrome .tabs-scroll {
-  filter: blur(7px) !important;
-  background: rgba(245, 243, 247, 0.28);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
+html.modal-open .detail-sticky-chrome .tab:not(.on) {
+  filter: blur(6px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html.modal-open .app-shell,
