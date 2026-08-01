@@ -28,12 +28,13 @@ export function setupPwaChrome() {
   })
 }
 
-/** Цвет системной статус-панели = тулбар ATM */
+/** Цвет системной статус-панели (theme-color), без перекраски фона страницы */
 export function applyThemeColor(color: string) {
   const root = document.documentElement
   root.style.setProperty('--btk-status', color)
-  root.style.backgroundColor = color
-  if (document.body) document.body.style.backgroundColor = color
+  /* Не красить html/body — фон страницы остаётся --btk-bg */
+  root.style.removeProperty('background-color')
+  if (document.body) document.body.style.removeProperty('background-color')
 
   /* Один meta без media — Android быстрее подхватывает смену theme-color */
   let meta = document.querySelector('meta[name="theme-color"]:not([media])') as HTMLMetaElement | null
