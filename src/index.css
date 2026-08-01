@@ -1925,61 +1925,38 @@ button {
   box-sizing: border-box;
 }
 
-/*
- * Оверлей ниже статус-бара + тулбара — иначе backdrop-filter размывает верхнюю панель.
- * Без тулбара (логин) — только ниже One UI статус-бара.
- */
+/* В макете оверлей ниже One UI статус-бара */
 .device-screen > .modal-backdrop {
   top: var(--safe-top);
 }
 
-.device-screen:has(.toolbar) > .modal-backdrop,
-body:has(.toolbar) > .modal-backdrop {
-  top: var(--toolbar-h);
+/*
+ * Тулбар поверх оверлея (скругления не трогаем): в углах виден тёмный backdrop,
+ * а не белый фон списка. Клики блокируем — модалка остаётся модальной.
+ */
+html.modal-open .toolbar,
+html.modal-open .detail-sticky-chrome {
+  z-index: 110;
+  pointer-events: none;
+  filter: none !important;
 }
 
-/*
- * Тёмный цвет только у хрома статус-бара/тулбара в макете.
- * html/#root/body остаются --btk-bg (светлый фон страницы).
- */
+html.modal-open .toolbar {
+  background: #3d1f49;
+}
+
+html.modal-open .oneui-statusbar {
+  background: #3d1f49;
+  filter: none !important;
+}
+
 html.modal-open .device-screen,
 html.modal-open .device-screen-clip,
 html.modal-open .device-screen .app-shell {
   background-color: #3d1f49;
 }
 
-html.modal-open .toolbar,
-html.modal-open .oneui-statusbar {
-  background: #3d1f49;
-  filter: none !important;
-}
-
-/*
- * Прямоугольная подложка под скруглённым тулбаром:
- * если скруглить и её — в углах снова белый фон списка.
- */
-html.modal-open .app-shell:has(.toolbar)::after,
-html.modal-open .device-screen:has(.toolbar)::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  max-width: none;
-  height: var(--toolbar-h);
-  margin: 0;
-  background: #3d1f49;
-  border-radius: 0;
-  z-index: 49;
-  pointer-events: none;
-  transform: none;
-}
-
-/*
- * Размываем только контент под тулбаром.
- * Статус-бар One UI и .toolbar не трогаем.
- */
+/* Размываем только контент под тулбаром */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
 html.modal-open .settings-page > :not(.toolbar),
@@ -1993,10 +1970,6 @@ html.modal-open .app-shell,
 html.modal-open .login-shell,
 html.modal-open .device-screen {
   overflow: hidden;
-}
-
-html.modal-open .detail-sticky-chrome {
-  filter: none !important;
 }
 
 .modal-card {
