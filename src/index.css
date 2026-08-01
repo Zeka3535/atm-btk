@@ -154,23 +154,23 @@ html {
   /*
    * Логический экран 390×844 (как современные смартфоны),
    * визуально уменьшаем (--ui-scale), чтобы UI не выглядел «гигантским».
+   * zoom на .device-screen обязателен: иначе position:fixed уезжает из рамки.
    */
   .device-phone.device-samsung {
     --screen-w: 390px;
     --screen-h: 844px;
-    /* 1:1 — любой zoom/transform на экране убивает backdrop-filter у острова и вкладок */
-    --ui-scale: 1;
+    --ui-scale: 0.8;
     --device-radius: 38px;
     --device-bezel: 9px;
-    --clip-w: var(--screen-w);
-    --clip-h: var(--screen-h);
+    --clip-w: calc(var(--screen-w) * var(--ui-scale));
+    --clip-h: calc(var(--screen-h) * var(--ui-scale));
     position: relative;
     width: calc(var(--clip-w) + var(--device-bezel) * 2);
     height: calc(var(--clip-h) + var(--device-bezel) * 2);
     max-height: calc(100dvh - 40px);
     min-height: 0;
     flex-shrink: 0;
-    /* Только внешний zoom макета, когда не влезает по высоте окна */
+    /* Если не влезает по высоте — пропорционально уменьшаем весь макет */
     zoom: min(
       1,
       calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
@@ -226,11 +226,13 @@ html {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: var(--screen-w);
+    height: var(--screen-h);
     min-height: 0;
     border-radius: 0;
     overflow: hidden;
+    /* zoom держит fixed (тулбар/остров) внутри экрана; transform:scale ломает макет сильнее */
+    zoom: var(--ui-scale);
     background: var(--btk-status);
   }
 
@@ -435,6 +437,15 @@ html {
   .device-screen .modal-card-center {
     width: calc(100% - 24px);
     max-width: calc(100% - 24px);
+  }
+
+  /* В макете zoom ломает backdrop-filter — более плотный фон вместо blur */
+  .device-screen .bottom-nav {
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .device-screen .detail-sticky-chrome .tab:not(.on) {
+    background: rgba(231, 224, 236, 0.92);
   }
 }
 
