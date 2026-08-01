@@ -1996,21 +1996,42 @@ html.modal-open .modal-backdrop .modal-card * {
   pointer-events: auto !important;
 }
 
-/* Размываем контент, вкладки деталки и нижний остров */
+/* Размываем контент под модалкой (как раньше — filter, не backdrop-filter) */
 html.modal-open .page-list > .ptr-root,
 html.modal-open .detail-page > :not(.toolbar):not(.detail-sticky-chrome),
-html.modal-open .detail-sticky-chrome .tabs-scroll,
 html.modal-open .settings-page > :not(.toolbar),
 html.modal-open .login-screen,
-html.modal-open .bottom-nav,
 html.modal-open .pwa-install-banner {
   filter: blur(6px) !important;
 }
 
-html.modal-open .detail-sticky-chrome .tab:not(.on) {
+/*
+ * Вкладки и нижний остров: над оверлеем (иначе blur не видно под rgba),
+ * размытие — filter на узле (+ класс .modal-blur из Modal).
+ */
+html.modal-open .bottom-nav,
+html.modal-open .bottom-nav.modal-blur {
+  z-index: 110 !important;
+  filter: blur(6px) !important;
+  pointer-events: none !important;
+  /* убрать «стекло» — иначе кажется, что blur нет */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.modal-open .detail-sticky-chrome .tabs-scroll,
+html.modal-open .detail-sticky-chrome .tabs-scroll.modal-blur,
+.bottom-nav.modal-blur,
+.tabs-scroll.modal-blur {
   filter: blur(6px) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+html.modal-open .detail-sticky-chrome .toolbar,
+html.modal-open .detail-sticky-chrome .toolbar * {
+  filter: none !important;
 }
 
 html.modal-open .app-shell,
