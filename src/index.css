@@ -1064,7 +1064,7 @@ button {
 }
 
 .toggle.on {
-  background: var(--btk-accent);
+  background: var(--btk-primary);
 }
 
 .toggle.disabled {
