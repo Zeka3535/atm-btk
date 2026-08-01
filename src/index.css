@@ -158,23 +158,18 @@ html {
   .device-phone.device-samsung {
     --screen-w: 390px;
     --screen-h: 844px;
-    --ui-scale: 0.8;
     --device-radius: 38px;
     --device-bezel: 9px;
-    --clip-w: calc(var(--screen-w) * var(--ui-scale));
-    --clip-h: calc(var(--screen-h) * var(--ui-scale));
     position: relative;
-    width: calc(var(--clip-w) + var(--device-bezel) * 2);
-    height: calc(var(--clip-h) + var(--device-bezel) * 2);
-    max-height: calc(100dvh - 40px);
+    /*
+     * Без zoom/transform на корпусе и экране: оба ломают backdrop-filter
+     * («стекло») у острова и вкладок. Масштаб — только через размер сцены.
+     */
+    width: calc(var(--screen-w) + var(--device-bezel) * 2);
+    height: calc(var(--screen-h) + var(--device-bezel) * 2);
+    max-height: none;
     min-height: 0;
     flex-shrink: 0;
-    /* Если не влезает по высоте — пропорционально уменьшаем весь макет */
-    zoom: min(
-      1,
-      calc((100dvh - 40px) / (var(--clip-h) + var(--device-bezel) * 2))
-    );
-    /* Нельзя filter на предке — ломает backdrop-filter («стекло») внутри экрана */
   }
 
   .device-samsung .device-bezel {
@@ -204,10 +199,14 @@ html {
 
   .device-samsung .device-screen-clip {
     position: relative;
-    width: var(--clip-w);
-    height: var(--clip-h);
+    width: var(--screen-w);
+    height: var(--screen-h);
     min-height: 0;
-    border-radius: calc(var(--device-radius) - 5px);
+    /*
+     * Без border-radius: overflow+radius на предке ломает backdrop-filter
+     * у острова/вкладок. Скругление даёт рамка .device-bezel.
+     */
+    border-radius: 0;
     overflow: hidden;
     /* Как theme-color в PWA — меняется при модалке (#3d1f49) */
     background: var(--btk-status);
@@ -224,15 +223,12 @@ html {
         var(--detail-tabs-card-gap)
     );
     position: absolute;
-    top: 0;
-    left: 0;
-    width: var(--screen-w);
-    height: var(--screen-h);
+    inset: 0;
+    width: 100%;
+    height: 100%;
     min-height: 0;
     border-radius: 0;
     overflow: hidden;
-    transform: scale(var(--ui-scale));
-    transform-origin: top left;
     background: var(--btk-status);
   }
 
@@ -419,8 +415,8 @@ html {
     margin: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    /* скругление совпадает с клипом в логических px (clip_r / ui-scale) */
-    border-radius: calc((var(--device-radius) - 5px) / var(--ui-scale));
+    /* Радиус только у .device-screen-clip — иначе overflow+radius ломает backdrop-filter */
+    border-radius: 0;
   }
 
   .device-screen .login-shell {
@@ -845,7 +841,10 @@ button {
   min-width: 128px;
   margin-inline: auto;
   height: auto;
-  background: transparent;
+  /* backdrop-filter на самом элементе; isolation:isolate ломает «стекло» */
+  background: rgba(255, 255, 255, 0.36);
+  backdrop-filter: blur(22px) saturate(1.55);
+  -webkit-backdrop-filter: blur(22px) saturate(1.55);
   border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 40px;
   box-shadow: 0 10px 32px rgba(102, 52, 121, 0.24);
@@ -856,26 +855,7 @@ button {
   padding: 6px;
   z-index: 40;
   box-sizing: border-box;
-  isolation: isolate;
   overflow: hidden;
-}
-
-/* Слой «стекла» — отдельным псевдо, чтобы blur не зависел от filter на детях */
-.bottom-nav::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  background: rgba(255, 255, 255, 0.42);
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  pointer-events: none;
-}
-
-.bottom-nav > * {
-  position: relative;
-  z-index: 1;
 }
 
 .nav-item {
@@ -887,14 +867,14 @@ button {
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: rgba(231, 224, 236, 0.45);
+  background: rgba(231, 224, 236, 0.28);
   color: var(--btk-primary);
   text-decoration: none;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .nav-item.active {
-  background: rgba(102, 52, 121, 0.18);
+  background: rgba(102, 52, 121, 0.22);
   opacity: 1;
 }
 
@@ -1389,17 +1369,19 @@ button {
 .detail-sticky-chrome {
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   z-index: 50;
   width: min(var(--app-max), 100%);
   max-width: 100%;
-  margin: 0;
+  margin-left: auto;
+  margin-right: auto;
   padding-bottom: 0;
   background: transparent;
   box-shadow: none;
   box-sizing: border-box;
   pointer-events: none;
+  /* Без transform — иначе backdrop-filter («стекло») на вкладках не работает */
 }
 
 .detail-sticky-chrome .toolbar {
@@ -1424,36 +1406,23 @@ button {
   pointer-events: auto;
 }
 
-/* Неактивные вкладки — frosted glass */
+/* Неактивные вкладки — frosted glass (без isolation — иначе blur только «внутри» вкладки) */
 .detail-sticky-chrome .tab:not(.on) {
   position: relative;
-  isolation: isolate;
   overflow: hidden;
-  background: transparent;
+  background: rgba(231, 224, 236, 0.34);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
   color: rgba(102, 52, 121, 0.85);
   box-shadow: none;
-}
-
-.detail-sticky-chrome .tab:not(.on)::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: rgba(231, 224, 236, 0.4);
-  backdrop-filter: blur(16px) saturate(1.35);
-  -webkit-backdrop-filter: blur(16px) saturate(1.35);
-  pointer-events: none;
 }
 
 .detail-sticky-chrome .tab.on {
   background: var(--btk-primary);
   color: #fff;
   box-shadow: none;
-}
-
-.detail-sticky-chrome .tab.on::before {
-  content: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .page-list > .ptr-root {
@@ -1535,8 +1504,10 @@ button {
   box-sizing: border-box;
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
   z-index: 50;
   box-shadow: 0 6px 20px rgba(102, 52, 121, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
