@@ -61,6 +61,22 @@ export interface AbonService {
   login?: string
   /** Городской: 80162XXXXXX */
   cityPhone?: string
+  /** Несколько городских на одном адресе (юрлица) */
+  cityPhones?: string[]
+}
+
+/** Все городские номера услуги (cityPhone + cityPhones) */
+export function serviceCityPhones(s: AbonService): string[] {
+  const raw = [...(s.cityPhone ? [s.cityPhone] : []), ...(s.cityPhones ?? [])]
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const p of raw) {
+    const key = p.replace(/\D/g, '')
+    if (!key || seen.has(key)) continue
+    seen.add(key)
+    out.push(p)
+  }
+  return out
 }
 
 /** Порт/услуга на вкладке модема (Huawei/ZTE/DSLAM) — как ServiceType в ATM */
@@ -170,13 +186,31 @@ export function cityTelHref(cityPhone: string): string {
   return `tel:${digits}`
 }
 
-/** Городской номер: #80162434506 */
+/** Городской для модалки контактов: # и последние 6 цифр (#456033) */
 export function formatCityPhone(cityPhone: string): string {
   const d = cityPhone.replace(/\D/g, '')
-  if (d.startsWith('80162') && d.length >= 11) return `#${d}`
-  if (d.length === 7) return `#80162${d}`
+  if (d.length >= 6) return `#${d.slice(-6)}`
   const bare = cityPhone.replace(/^#\s*(Стационар\s*)?/i, '').trim()
   return bare.startsWith('#') ? bare : `#${bare}`
+}
+
+/** Городской в списке услуг: код города + номер, без # (162 456033) */
+export function formatCityPhoneLine(cityPhone: string): string {
+  const d = cityPhone.replace(/\D/g, '')
+  // 80ABCXXXXXX → ABC XXXXXX (код города + 6 цифр)
+  if (d.startsWith('80') && d.length >= 11) {
+    const local = d.slice(-6)
+    const area = d.slice(2, d.length - 6)
+    return `${area} ${local}`
+  }
+  if (d.startsWith('375') && d.length >= 12) {
+    const local = d.slice(-6)
+    const area = d.slice(3, d.length - 6)
+    return `${area} ${local}`
+  }
+  if (d.length === 7) return `162 ${d}`
+  if (d.length >= 6) return d.slice(-9).replace(/^(\d{2,4})(\d{6})$/, '$1 $2')
+  return cityPhone.replace(/^#\s*/, '').trim()
 }
 
 /** Вкладки как в TasksProvider (ServiceScreen) */
@@ -252,11 +286,12 @@ export function taskCallContacts(task: Pick<DemoTask, 'phones' | 'abonServices'>
     out.push({ phone: p, kind: 'mobile' })
   }
   for (const s of task.abonServices ?? []) {
-    if (!s.cityPhone) continue
-    const key = s.cityPhone.replace(/\D/g, '')
-    if (!key || seen.has(key)) continue
-    seen.add(key)
-    out.push({ phone: s.cityPhone, kind: 'city' })
+    for (const phone of serviceCityPhones(s)) {
+      const key = phone.replace(/\D/g, '')
+      if (!key || seen.has(key)) continue
+      seen.add(key)
+      out.push({ phone, kind: 'city' })
+    }
   }
   return out
 }

@@ -2,41 +2,18 @@
 
 **Проект:** https://stitch.withgoogle.com/projects/786355720389804835
 
-## Что сделано
+Реализация в коде: каталог **`d:\ATM\atm-pwa-ds`** (ветка `design-system`).
 
-### Экраны заявки (вкладки)
-- DetailServices — Сервисы  
-- DetailHuawei — Huawei xPON  
-- DetailHistory — История  
-- DetailSecondary — Вторичка  
-- DetailDslam — DSLAM  
+Исходный PWA без Stitch-полировки: `d:\ATM\atm-pwa`.
 
-### Модалки
-- ModalReport, ModalContacts, ModalMaps, ModalWifi  
+## Экраны (актуальные Interactive)
 
-### Оболочка
-- Login, Inbox, Closed, Settings  
+См. `stitch-nav-map.json` — Login, Inbox, Closed, Settings, Detail*, Modal*.
 
-Актуальные id: `design/stitch-nav-map.json` (берите экраны с суффиксом **Interactive**).
+## Гибрид в `atm-pwa-ds`
 
-## Как переключаться в прототипе
-
-1. Открой проект.  
-2. В списке экранов выбирай **последние «… (Interactive)»** (их много черновиков — смотри дату/порядок или id из `stitch-nav-map.json`).  
-3. Режим **Preview / Prototype** → клики:
-
-| Действие | Переход |
-|----------|---------|
-| Войти | Inbox |
-| ⚙ | Settings |
-| Карточка заявки | DetailServices |
-| Остров Inbox ↔ Closed | списки |
-| Назад | Inbox |
-| Вкладки Сервисы / Huawei / История / Вторичка | соответствующие экраны |
-| Отчёт / телефон / карта / Wi‑Fi | модалки |
-| Отмена / фон модалки | DetailServices |
-| Послать отчёт | Inbox |
-
-## Замечание
-
-Stitch при каждом `edit` создаёт **новую** копию экрана. Связи прошивались пакетами; если какой-то клик ведёт «в никуда», открой экран из `stitch-nav-map.json` или напиши — подожму одну финальную связку.
+| Из Stitch | Из atm-pwa |
+|-----------|------------|
+| Токены, Manrope, логин-hero | Toolbar фиолетовый |
+| Карточки / meta-chips / статусы | Нижний остров без подписей |
+| Настройки (секции, cyan logout) | Вкладки деталки (TabsScroll) |

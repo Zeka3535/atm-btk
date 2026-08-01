@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { CallContact, DemoTask } from '../types'
 import { isReportSentToday } from '../data/mockTasks'
+import { IconNote } from './icons'
 import { LinkedText } from './UiKit'
 import { TaskFooter } from './TaskFooter'
 
@@ -9,18 +10,30 @@ interface Props {
   onReport: (id: string) => void
   onContacts: (contacts: CallContact[]) => void
   onMaps: (address: string) => void
+  /** На деталке — кнопка Wi‑Fi открывает модалку */
+  onWifi?: () => void
+  /** Не уходить со страницы при тапе по полям (уже открыта заявка) */
+  embedded?: boolean
 }
 
-export function TaskCard({ task, onReport, onContacts, onMaps }: Props) {
+export function TaskCard({
+  task,
+  onReport,
+  onContacts,
+  onMaps,
+  onWifi,
+  embedded = false,
+}: Props) {
   const navigate = useNavigate()
-  const done = task.isClosed || isReportSentToday(task)
+  const done = task.isClosed || isReportSentToday(task) || task.isOtpisano
 
   function open() {
+    if (embedded) return
     navigate(`/tasks/${task.id}`)
   }
 
   return (
-    <article className="card task-card">
+    <article className="card task-card stitch-card">
       <div className="task-header">
         <button
           type="button"
@@ -39,11 +52,14 @@ export function TaskCard({ task, onReport, onContacts, onMaps }: Props) {
       <button type="button" className="linkish fio" onClick={open}>
         {task.subscriber}
       </button>
+
       {task.damage && (
-        <button type="button" className="linkish damage" onClick={open}>
-          {task.damage}
+        <button type="button" className="linkish damage damage-row" onClick={open}>
+          <IconNote size={14} />
+          <span>{task.damage}</span>
         </button>
       )}
+
       <button type="button" className="linkish task-text" onClick={open}>
         <LinkedText text={task.text} />
       </button>
@@ -52,6 +68,7 @@ export function TaskCard({ task, onReport, onContacts, onMaps }: Props) {
         task={task}
         onMaps={() => onMaps(task.address)}
         onContacts={onContacts}
+        onWifi={onWifi}
         onReport={() => onReport(task.id)}
       />
     </article>

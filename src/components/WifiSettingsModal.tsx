@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useDemo } from '../context/DemoContext'
+import { IconEye, IconEyeOff } from './icons'
 import { BtkSelect } from './BtkSelect'
 import { Modal } from './UiKit'
 
@@ -49,25 +50,25 @@ export function WifiSettingsModal({ taskId, onClose }: Props) {
   }
 
   return (
-    <Modal open onClose={onClose} title="Настройка Wi‑Fi">
-      <p className="muted" style={{ marginTop: 0 }}>
-        {task.subscriber}
-      </p>
-      <form onSubmit={onSubmit}>
+    <Modal open onClose={onClose} title="Настройка Wi‑Fi" showClose={false}>
+      <form className="wifi-form" onSubmit={onSubmit}>
         <div className="field">
-          <label htmlFor="wifi-ssid">Имя сети (SSID)</label>
+          <label htmlFor="wifi-ssid">SSID (Имя сети)</label>
           <input
             id="wifi-ssid"
+            className="stitch-input"
             value={ssid}
             onChange={(e) => setSsid(e.target.value)}
+            placeholder="Beltelecom_Home"
             autoComplete="off"
           />
         </div>
         <div className="field">
           <label htmlFor="wifi-pass">Пароль</label>
-          <div className="pass-row">
+          <div className="field-control">
             <input
               id="wifi-pass"
+              className="stitch-input"
               type={showPass ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -75,10 +76,11 @@ export function WifiSettingsModal({ taskId, onClose }: Props) {
             />
             <button
               type="button"
-              className="btn btn-ghost pass-toggle"
+              className="field-trail"
+              aria-label={showPass ? 'Скрыть пароль' : 'Показать пароль'}
               onClick={() => setShowPass((v) => !v)}
             >
-              {showPass ? 'Скрыть' : 'Показать'}
+              {showPass ? <IconEyeOff size={20} /> : <IconEye size={20} />}
             </button>
           </div>
         </div>
@@ -89,12 +91,14 @@ export function WifiSettingsModal({ taskId, onClose }: Props) {
           options={WIFI_BANDS}
           onChange={setBand}
         />
-        <p className="muted" style={{ fontSize: '0.8rem' }}>
-          Демо без отправки на роутер — значения сохраняются только в этой сессии.
-        </p>
-        <button type="submit" className="btn btn-block">
-          Применить
-        </button>
+        <div className="modal-actions stitch-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>
+            Отмена
+          </button>
+          <button type="submit" className="btn btn-send">
+            Применить
+          </button>
+        </div>
       </form>
     </Modal>
   )

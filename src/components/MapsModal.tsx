@@ -1,5 +1,5 @@
 import { Modal } from './UiKit'
-import { IconPlace } from './icons'
+import { IconGoogleMaps, IconYandexMaps } from './icons'
 import { googleMapsUrl, yandexMapsUrl } from '../types'
 
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
   onClose: () => void
 }
 
-/** Выбор карт — приоритет Яндекс, как BtkMapIntents */
+/** Выбор карт — Stitch ModalMaps, приоритет Яндекс */
 export function MapsModal({ address, onClose }: Props) {
   if (!address) return null
 
@@ -17,33 +17,29 @@ export function MapsModal({ address, onClose }: Props) {
   }
 
   return (
-    <Modal open onClose={onClose} title="Открыть в картах">
-      <p className="muted maps-addr">{address}</p>
-      <ul className="maps-list">
-        <li>
-          <button type="button" className="maps-option" onClick={() => open(yandexMapsUrl(address))}>
-            <IconPlace size={22} />
-            <span>
-              <strong>Яндекс.Карты</strong>
-              <span className="muted">Рекомендуется</span>
-            </span>
-          </button>
-        </li>
-        <li>
-          <button type="button" className="maps-option" onClick={() => open(googleMapsUrl(address))}>
-            <IconPlace size={22} />
-            <span>
-              <strong>Google Maps</strong>
-              <span className="muted">Запасной вариант</span>
-            </span>
-          </button>
-        </li>
-      </ul>
-      <div className="modal-actions">
-        <button type="button" className="btn btn-ghost btn-block" onClick={onClose}>
-          Отмена
+    <Modal open onClose={onClose} title="Открыть в картах" showClose={false}>
+      <p className="maps-addr muted">{address}</p>
+      <div className="maps-stitch">
+        <button
+          type="button"
+          className="maps-stitch-btn yandex"
+          onClick={() => open(yandexMapsUrl(address))}
+        >
+          <IconYandexMaps size={22} />
+          Яндекс.Карты
+        </button>
+        <button
+          type="button"
+          className="maps-stitch-btn google"
+          onClick={() => open(googleMapsUrl(address))}
+        >
+          <IconGoogleMaps size={22} />
+          Google Maps
         </button>
       </div>
+      <button type="button" className="btn btn-ghost btn-block maps-cancel" onClick={onClose}>
+        Отмена
+      </button>
     </Modal>
   )
 }

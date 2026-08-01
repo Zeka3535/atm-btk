@@ -9,7 +9,7 @@ export function TasksToolbar({ mode }: { mode: 'inbox' | 'closed' }) {
   const closed = closedTasks(tasks).length
   const title = mode === 'inbox' ? 'Входящие' : 'Закрытые'
   const subtitle =
-    mode === 'inbox' ? `Заявок всего: ${incoming}` : `Закрытых заявок ${closed}`
+    mode === 'inbox' ? `Заявок всего: ${incoming}` : `Закрытых заявок: ${closed}`
 
   return (
     <header className="toolbar">
@@ -36,21 +36,19 @@ export function BackToolbar({
 }) {
   const navigate = useNavigate()
 
+  function goBack() {
+    if (window.history.length > 1) navigate(-1)
+    else navigate(fallbackTo, { replace: true })
+  }
+
   return (
     <header className="toolbar toolbar-back">
-      <button
-        type="button"
-        className="icon-tool"
-        title="Назад"
-        aria-label="Назад"
-        onClick={() => {
-          if (window.history.length > 1) navigate(-1)
-          else navigate(fallbackTo, { replace: true })
-        }}
-      >
-        <IconBack size={28} />
+      <button type="button" className="toolbar-back-hit" onClick={goBack} aria-label="Назад">
+        <span className="icon-tool" aria-hidden>
+          <IconBack size={28} />
+        </span>
+        {title ? <span className="toolbar-title toolbar-back-title">{title}</span> : null}
       </button>
-      {title ? <h1 className="toolbar-title toolbar-back-title">{title}</h1> : null}
     </header>
   )
 }

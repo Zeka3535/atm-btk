@@ -74,13 +74,13 @@ interface DemoContextValue {
   demoNotifyNewTask: (address?: string) => Promise<void>
   toast: ToastPayload | null
   showToast: (title: string, message?: string) => void
-  version: string
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null)
 
 const AUTH_KEY = 'atm_pwa_auth'
-const NAME_KEY = 'atm_pwa_name'
+/** ФИО специалиста в демо (конкурсная заявка) */
+const SPECIALIST_FIO = 'Чайка Евгений Игоревич'
 const OFFLINE_KEY = 'atm_pwa_offline'
 const NOTIFY_KEY = 'atm_pwa_notify'
 const SOUND_KEY = 'atm_pwa_notify_sound'
@@ -97,7 +97,7 @@ function capitalizeSnack(msg: string): string {
 
 export function DemoProvider({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem(AUTH_KEY) === '1')
-  const [accountName, setAccountName] = useState(() => localStorage.getItem(NAME_KEY) || 'demo')
+  const [accountName] = useState(SPECIALIST_FIO)
   const [offline, setOfflineState] = useState(() => localStorage.getItem(OFFLINE_KEY) === '1')
   const [offlineSince] = useState(() =>
     new Date().toLocaleString('ru-RU', {
@@ -120,8 +120,6 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const login = useCallback((loginName: string) => {
     if (!loginName.trim()) return
     localStorage.setItem(AUTH_KEY, '1')
-    localStorage.setItem(NAME_KEY, loginName.trim())
-    setAccountName(loginName.trim())
     setLoggedIn(true)
   }, [])
 
@@ -289,7 +287,6 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       demoNotifyNewTask,
       toast,
       showToast,
-      version: 'PWA 0.2.0-demo',
     }),
     [
       loggedIn,

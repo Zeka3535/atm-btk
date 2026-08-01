@@ -5,3 +5,6 @@ dist/
 *.local
 .env
 .env.*
+
+# Локальные экспорты Stitch (не для Pages)
+design/exports/

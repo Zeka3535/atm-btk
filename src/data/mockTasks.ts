@@ -14,14 +14,14 @@ const METRICS_ZTE_OK: MetricRow[] = [
   { icon: 'optical', label: 'Оптический уровень', value: '−22.4 дБм' },
   { icon: 'laser', label: 'Лазер TX', value: '2.1 дБм' },
   { icon: 'thermo', label: 'Температура ONU', value: '41 °C' },
-  { icon: 'attenuation', label: 'Затухание', value: '18.6 дБ' },
+  { icon: 'attenuation', label: 'Затухание', value: '−22.4 / −21.5 дБ' },
   { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC8A1B2C3' },
 ]
 
 const METRICS_ZTE_LOS: MetricRow[] = [
-  { icon: 'optical', label: 'Оптический уровень', value: '−28.5 дБм' },
+  { icon: 'optical', label: 'Оптический уровень', value: '−28.0 дБм' },
   { icon: 'laser', label: 'Лазер TX', value: 'нет данных' },
-  { icon: 'attenuation', label: 'Затухание', value: '26.2 дБ' },
+  { icon: 'attenuation', label: 'Затухание', value: '−27.2 / −28.0 дБ' },
   { icon: 'modem', label: 'Серийный номер', value: 'ZTEGC8A1B2C3' },
   { icon: 'thermo', label: 'Температура ONU', value: '36 °C' },
 ]
@@ -138,8 +138,11 @@ const MODEM_ZTE_Y50: ModemPanel = {
   ],
 }
 
-function ponHwSeries(baseRx = -15.74): PonMeasure[] {
-  const pts = [baseRx - 1.1, baseRx - 0.5, baseRx + 0.2, baseRx]
+function ponHwSeries(baseRx = -16.2): PonMeasure[] {
+  /* RX модема −14…−28 дБм — ближе к −28 на грани LOS */
+  const pts = [baseRx - 1.1, baseRx - 0.5, baseRx + 0.2, baseRx].map((v) =>
+    Math.max(-28, Math.min(-14, v)),
+  )
   const stamps = [
     '2026-07-28 09:12:41',
     '2026-07-29 11:04:18',
@@ -147,14 +150,15 @@ function ponHwSeries(baseRx = -15.74): PonMeasure[] {
     '2026-07-30 13:21:06',
   ]
   return pts.map((rx, i) => {
-    const onuUp = (2.2 + i * 0.05).toFixed(2)
+    const onuUp = Math.max(-28, Math.min(-14, rx + 1.1))
     const oltUp = (-12.85 - (i % 2) * 0.05).toFixed(2)
     const oltDn = (5.0 + (i % 3) * 0.01).toFixed(2)
     return {
       at: stamps[i],
       oltUpDown: `${oltUp}/${oltDn}`,
-      onuUpDown: `${onuUp}/${rx.toFixed(2)}`,
-      attenuation: `${(Math.abs(rx) - Number(oltDn)).toFixed(2)}/${(Math.abs(Number(oltUp)) - Number(onuUp)).toFixed(2)}`,
+      onuUpDown: `${onuUp.toFixed(2)}/${rx.toFixed(2)}`,
+      /* Затухание на модеме — тот же формат ↑/↓, дБм */
+      attenuation: `${onuUp.toFixed(2)}/${rx.toFixed(2)}`,
       delta: i === pts.length - 1 ? '0.0/0' : `${(0.2 + i * 0.1).toFixed(1)}/${(0.1 + i * 0.05).toFixed(2)}`,
       voltage: `${(33.2 + i * 0.05).toFixed(2)} В`,
       laserCurrent: `${16 + (i % 3)} мА`,
@@ -165,17 +169,19 @@ function ponHwSeries(baseRx = -15.74): PonMeasure[] {
 }
 
 function ponZteSeries(baseRx = -22.4): PonMeasure[] {
-  const pts = [baseRx - 0.8, baseRx - 0.2, baseRx]
+  const pts = [baseRx - 0.8, baseRx - 0.2, baseRx].map((v) =>
+    Math.max(-28, Math.min(-14, v)),
+  )
   const stamps = ['2026-07-29 14:22:10', '2026-07-30 09:05:33', '2026-07-30 12:48:19']
   return pts.map((rx, i) => {
-    const onuUp = (2.0 + i * 0.05).toFixed(2)
+    const onuUp = Math.max(-28, Math.min(-14, rx + 0.9))
     const oltUp = (-13.1 - i * 0.05).toFixed(2)
     const oltDn = (4.9 + i * 0.05).toFixed(2)
     return {
       at: stamps[i],
       oltUpDown: `${oltUp}/${oltDn}`,
-      onuUpDown: `${onuUp}/${rx.toFixed(2)}`,
-      attenuation: `${(Math.abs(rx) - Number(oltDn)).toFixed(2)}/${(Math.abs(Number(oltUp)) - Number(onuUp)).toFixed(2)}`,
+      onuUpDown: `${onuUp.toFixed(2)}/${rx.toFixed(2)}`,
+      attenuation: `${onuUp.toFixed(2)}/${rx.toFixed(2)}`,
       delta: `${(0.3 + i * 0.1).toFixed(1)}/0.12`,
       voltage: `${(32.8 + i * 0.1).toFixed(2)} В`,
       laserCurrent: `${15 + i} мА`,
@@ -190,8 +196,8 @@ function ponZteLosSeries(): PonMeasure[] {
     {
       at: '2026-07-29 18:10:00',
       oltUpDown: '-13.10/4.90',
-      onuUpDown: '2.05/-22.80',
-      attenuation: '18.90/15.15',
+      onuUpDown: '-21.90/-22.80',
+      attenuation: '-21.90/-22.80',
       delta: '0.2/0.10',
       voltage: '32.90 В',
       laserCurrent: '15 мА',
@@ -201,8 +207,8 @@ function ponZteLosSeries(): PonMeasure[] {
     {
       at: '2026-07-30 08:40:12',
       oltUpDown: '-13.40/4.70',
-      onuUpDown: '1.10/-26.40',
-      attenuation: '22.10/14.50',
+      onuUpDown: '-25.50/-26.40',
+      attenuation: '-25.50/-26.40',
       delta: '1.8/0.40',
       voltage: '32.40 В',
       laserCurrent: '12 мА',
@@ -212,13 +218,13 @@ function ponZteLosSeries(): PonMeasure[] {
     {
       at: '2026-07-30 11:05:33',
       oltUpDown: '-13.80/4.20',
-      onuUpDown: '0.40/-28.50',
-      attenuation: '24.30/14.20',
+      onuUpDown: '-27.20/-28.00',
+      attenuation: '-27.20/-28.00',
       delta: '3.2/0.90',
       voltage: '31.80 В',
       laserCurrent: '9 мА',
       temperature: '35 °C',
-      onuRx: -28.5,
+      onuRx: -28.0,
     },
   ]
 }
@@ -262,7 +268,7 @@ export const MOCK_TASKS: DemoTask[] = [
     abonServices: [
       { type: 'ByFly', tariff: 'Ясна 200_Smart', status: 'offline', login: '160002496270001' },
       { type: 'Телефония', tariff: 'Городская линия', status: 'offline', cityPhone: '80162434512' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'offline' },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'offline' },
     ],
     wifi: { ssid: 'Beltelecom_Savchuk', password: 'HomeWifi12', band: '2.4 + 5 ГГц' },
     carrier: 3,
@@ -302,7 +308,7 @@ export const MOCK_TASKS: DemoTask[] = [
     abonServices: [
       { type: 'ByFly + ZALA', tariff: 'Ясна 500_Smart', status: 'offline', login: '160002511380012' },
       { type: 'Телефония', tariff: 'Городская линия', status: 'offline', cityPhone: '80162410844' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'offline' },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'offline' },
     ],
     wifi: { ssid: 'ZTE_Home_45', password: 'KravWifi88', band: '2.4 ГГц' },
     carrier: 2,
@@ -342,7 +348,7 @@ export const MOCK_TASKS: DemoTask[] = [
     abonServices: [
       { type: 'ByFly + ZALA', tariff: 'Ясна 500_Smart', status: 'online', login: '160002488120045' },
       { type: 'Телефония', tariff: 'Городская линия', status: 'online', cityPhone: '80162431190' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'online' },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'online' },
     ],
     wifi: { ssid: 'Melnik_WiFi', password: 'PassMelnik1', band: '2.4 ГГц' },
     carrier: 2,
@@ -373,7 +379,7 @@ export const MOCK_TASKS: DemoTask[] = [
     dateLabel: 'Сегодня',
     address: 'БРЕСТ Г., ОРЛОВСКАЯ УЛ., Д. 12, КВ. 7',
     addressKey: 'брест-орловская-12',
-    subscriber: 'Бойко Наталья Ивановна',
+    subscriber: 'ООО «БрестТоргСервис»',
     phones: ['375447201198'],
     text: 'До 13:00. Потеря сигнала (LOS), индикатор ONU мигает. Нет интернета и телефонии. Контакт: +375 44 720-11-98 (МТС).',
     damage: '649: Не работает телефон',
@@ -382,8 +388,14 @@ export const MOCK_TASKS: DemoTask[] = [
     serviceLines: ['ByFly', 'Wi‑Fi'],
     abonServices: [
       { type: 'ByFly', tariff: 'Ясна 200_Smart', status: 'offline', login: '160002503910078' },
-      { type: 'Телефония', tariff: 'Городская линия', status: 'offline', cityPhone: '80162456033' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'offline' },
+      {
+        type: 'Телефония',
+        tariff: 'Городская линия',
+        status: 'offline',
+        cityPhone: '80162456033',
+        cityPhones: ['80162456034', '80162456035', '80162456040', '80162456112'],
+      },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'offline' },
     ],
     wifi: { ssid: 'Boyko_Home', password: 'Orlovskaya12', band: '2.4 + 5 ГГц' },
     carrier: 2,
@@ -431,7 +443,7 @@ export const MOCK_TASKS: DemoTask[] = [
     modem: MODEM_HW_ZALA_FAIL,
     ponMeasures: ponHwSeries(-16.2),
     isNew: false,
-    isOtpisano: false,
+    isOtpisano: true,
     isClosed: false,
     isSended: false,
     isIzveschenie: false,
@@ -470,7 +482,7 @@ export const MOCK_TASKS: DemoTask[] = [
     abonServices: [
       { type: 'ByFly', tariff: 'Ясна 200_Smart', status: 'online', login: '160001905670021' },
       { type: 'Телефония', tariff: 'Городская линия', status: 'online', cityPhone: '80162429015' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'online' },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'online' },
     ],
     wifi: { ssid: 'Zhuk_WiFi', password: 'ChangeMe01', band: '2.4 ГГц' },
     carrier: 1,
@@ -484,7 +496,7 @@ export const MOCK_TASKS: DemoTask[] = [
     isSended: false,
     isIzveschenie: false,
     reportText: '',
-    reportDraft: 'SSID настроен, новый пароль выдан абоненту.',
+    reportDraft: '',
     reportSentDay: '',
     history: [
       {
@@ -512,7 +524,7 @@ export const MOCK_TASKS: DemoTask[] = [
     abonServices: [
       { type: 'ByFly', tariff: 'Ясна 200_Smart', status: 'online', login: '160002520110088' },
       { type: 'Телефония', tariff: 'Городская линия', status: 'online', cityPhone: '80162451522' },
-      { type: 'Wi‑Fi', tariff: 'Роутер (аренда)', status: 'online' },
+      { type: 'Wi‑Fi', tariff: 'Роутер', status: 'online' },
     ],
     wifi: { ssid: 'Kuznetsova_50', password: 'HomePass50', band: '2.4 ГГц' },
     carrier: 2,

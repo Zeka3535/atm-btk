@@ -2,15 +2,22 @@ import { useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { ContactsModal } from '../components/ContactsModal'
 import { MapsModal } from '../components/MapsModal'
-import { IconChart, MetricGlyph } from '../components/icons'
+import {
+  IconChart,
+  IconCloudOff,
+  IconModem,
+  IconRouter,
+  IconTv,
+  IconUser,
+  MetricGlyph,
+} from '../components/icons'
 import { BackToolbar } from '../components/NavChrome'
 import { ReportModal } from '../components/ReportModal'
 import { TabsScroll } from '../components/TabsScroll'
-import { TaskFooter } from '../components/TaskFooter'
+import { TaskCard } from '../components/TaskCard'
 import { WifiSettingsModal } from '../components/WifiSettingsModal'
 import { LinkedText, Modal } from '../components/UiKit'
 import { useDemo } from '../context/DemoContext'
-import { isReportSentToday } from '../data/mockTasks'
 import type {
   AbonService,
   CallContact,
@@ -23,7 +30,12 @@ import type {
   PonMeasure,
   ServiceTabId,
 } from '../types'
-import { cityTelHref, formatCityPhone, screensForCarrier } from '../types'
+import {
+  cityTelHref,
+  formatCityPhoneLine,
+  screensForCarrier,
+  serviceCityPhones,
+} from '../types'
 
 function formatHistoryDate(raw: string) {
   const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
@@ -73,60 +85,51 @@ export function TaskDetailPage() {
   if (!task) {
     return (
       <div className="page detail-page">
-        <BackToolbar title="Назад" />
+        <div className="detail-sticky-chrome">
+          <BackToolbar title="Назад" />
+        </div>
         <p>Заявка не найдена</p>
       </div>
     )
   }
 
-  const done = task.isClosed || isReportSentToday(task)
+  const showHeadCard = tab === 'services' || tab === 'dslam' || tab === 'zte' || tab === 'huawei'
 
   return (
     <div className="page detail-page">
-      <BackToolbar title="Назад" />
-      <TabsScroll activeId={tab}>
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={tab === t.id ? 'tab on' : 'tab'}
-            onClick={() => setTab(t.id)}
-          >
-            {t.title}
-          </button>
-        ))}
-      </TabsScroll>
+      <div className="detail-sticky-chrome">
+        <BackToolbar title="Назад" />
+        <TabsScroll activeId={tab}>
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={tab === t.id ? 'tab on' : 'tab'}
+              onClick={() => setTab(t.id)}
+            >
+              {t.title}
+            </button>
+          ))}
+        </TabsScroll>
+      </div>
 
-      {/* Шапка заявки — как карточка в списке ATM */}
-      <div className="card detail-head-card">
-        <div className="task-header">
-          <p className={`task-address${done ? ' done' : ''}`}>{task.address}</p>
-          <div className="task-header-meta">
-            <span className="task-date">{task.dateLabel}</span>
-            <span className="badge badge-period">{task.periodLabel}</span>
-          </div>
-        </div>
-        <div className="task-divider" />
-
-        <p className={`fio${done ? ' done' : ''}`}>{task.subscriber}</p>
-        {task.damage && <p className="damage">{task.damage}</p>}
-        <p className="task-text">
-          <LinkedText text={task.text} />
-        </p>
-
-        <TaskFooter
+      {showHeadCard && (
+        <TaskCard
           task={task}
-          onMaps={() => setMapAddr(task.address)}
-          onContacts={setContacts}
-          onReport={() => {
+          embedded
+          onReport={(tid) => {
             if (task.isClosed) {
               showToast('Заявка закрыта. Отчёт нельзя отправить')
               return
             }
             setReportOpen(true)
+            void tid
           }}
+          onContacts={setContacts}
+          onMaps={setMapAddr}
+          onWifi={() => setWifiOpen(true)}
         />
-      </div>
+      )}
 
       <div className="detail-tab-body">
         <TabBody task={task} tab={tab} onWifi={() => setWifiOpen(true)} />
@@ -151,20 +154,34 @@ function TabBody({
 }) {
   if (tab === 'services') {
     const list = task.abonServices ?? []
-    const hasWifi =
-      !!task.wifi || task.services.includes('wifi') || list.some((s) => s.type.includes('Wi'))
 
     return (
-      <div className="detail-block">
+      <div className="detail-block stitch-services">
+        <div className="section-head">
+          <h3>Подключенные услуги</h3>
+        </div>
+
         {list.length === 0 && (!task.serviceLines || task.serviceLines.length === 0) && (
           <p className="muted">Услуги не привязаны к заявке</p>
         )}
 
         {list.length > 0 ? (
-          <ul className="abon-service-list">
-            {list.map((s) => (
-              <AbonServiceRow key={`${s.type}-${s.tariff}`} service={s} />
-            ))}
+          <ul className="abon-service-list stitch-svc-list">
+            {groupAbonServices(list).map((item) =>
+              item.kind === 'phones' ? (
+                <TelephonyServiceRow
+                  key={`tel-${item.phones.join('-')}`}
+                  service={item.service}
+                  phones={item.phones}
+                />
+              ) : (
+                <AbonServiceRow
+                  key={`${item.service.type}-${item.service.tariff}-${item.service.login ?? ''}`}
+                  service={item.service}
+                  onWifi={onWifi}
+                />
+              ),
+            )}
           </ul>
         ) : (
           <ul className="service-list">
@@ -173,45 +190,42 @@ function TabBody({
             ))}
           </ul>
         )}
-
-        {hasWifi && (
-          <button type="button" className="btn btn-ghost btn-block wifi-detail-btn" onClick={onWifi}>
-            Настройка Wi‑Fi
-          </button>
-        )}
       </div>
     )
   }
 
   if (tab === 'history') {
     return (
-      <div className="detail-block history-block">
+      <div className="detail-block stitch-history">
+        <div className="section-head">
+          <h3>История действий</h3>
+        </div>
         {task.history.length === 0 && <p className="muted">История пуста</p>}
-        <ol className="history-timeline">
+        <ol className="stitch-timeline">
           {task.history.map((h, i) => {
             const hasReport = Boolean(h.closeNote && h.closeNote !== '—')
             return (
-              <li key={i} className="history-item">
-                <div className="history-rail" aria-hidden>
-                  <span className="history-dot" />
-                </div>
-                <article className="history-card">
-                  <header className="history-card-head">
-                    <time className="history-date" dateTime={h.date}>
+              <li key={i} className="stitch-tl-item">
+                <article className="stitch-tl-card">
+                  <header className="stitch-tl-head">
+                    <time className="stitch-tl-date" dateTime={h.date}>
                       {formatHistoryDate(h.date)}
                     </time>
-                    <span className="history-worker">{formatWorkerShort(h.worker)}</span>
+                    <span className="stitch-tl-worker">
+                      <IconUser size={14} />
+                      {formatWorkerShort(h.worker)}
+                    </span>
                   </header>
-                  <div className="history-section">
-                    <span className="history-chip">Заявка</span>
-                    <p className="history-note">
+                  <div className="stitch-tl-section">
+                    <p className="stitch-tl-label">Заявка</p>
+                    <p className="stitch-tl-note">
                       <LinkedText text={h.note} />
                     </p>
                   </div>
                   {hasReport && (
-                    <div className="history-section history-section-report">
-                      <span className="history-chip history-chip-report">Отчёт</span>
-                      <p className="history-note">
+                    <div className="stitch-tl-report">
+                      <p className="stitch-tl-label">Отчёт</p>
+                      <p className="stitch-tl-note">
                         <LinkedText text={h.closeNote} />
                       </p>
                     </div>
@@ -227,7 +241,15 @@ function TabBody({
 
   if (tab === 'dslam' || tab === 'zte' || tab === 'huawei') {
     const title = tab === 'dslam' ? 'DSLAM' : tab === 'zte' ? 'ZTE xPON' : 'Huawei xPON'
-    return <CarrierTabBlock title={title} modem={task.modem} rows={task.carrierMetrics} />
+    return (
+      <CarrierTabBlock
+        title={title}
+        kind={tab}
+        modem={task.modem}
+        rows={task.carrierMetrics}
+        onWifi={onWifi}
+      />
+    )
   }
 
   if (tab === 'primary') {
@@ -243,31 +265,147 @@ function TabBody({
   return <SecondaryMeasures task={task} />
 }
 
-function AbonServiceRow({ service }: { service: AbonService }) {
-  const st =
-    service.status === 'online'
-      ? null
-      : service.status === 'offline'
-        ? 'Нет связи'
-        : service.status === 'blocked'
-          ? 'Блок'
-          : null
+function serviceTone(type: string): 'cyan' | 'orange' | 'green' | 'purple' {
+  const t = type.toLowerCase()
+  if (t.includes('zala') || t.includes('тв') || t.includes('tv')) return 'orange'
+  if (t.includes('телефон') || t.includes('ims') || t.includes('город')) return 'green'
+  if (t.includes('wi')) return 'purple'
+  return 'cyan'
+}
+
+function ServiceGlyph({ type }: { type: string }) {
+  const tone = serviceTone(type)
+  if (tone === 'orange') return <IconTv size={22} />
+  if (tone === 'green') {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M6.62,10.79c1.44,2.83 3.76,5.14 6.59,6.59l2.2,-2.2c0.27,-0.27 0.67,-0.36 1.02,-0.24 1.12,0.37 2.33,0.57 3.57,0.57 0.55,0 1,0.45 1,1V20c0,0.55 -0.45,1 -1,1 -9.39,0 -17,-7.61 -17,-17 0,-0.55 0.45,-1 1,-1h3.5c0.55,0 1,0.45 1,1 0,1.25 0.2,2.45 0.57,3.57 0.11,0.35 0.03,0.74 -0.25,1.02l-2.2,2.2z" />
+      </svg>
+    )
+  }
+  return <IconRouter size={22} />
+}
+
+function isTelephonyService(s: AbonService) {
+  return /телефон|ims|город/i.test(s.type) && serviceCityPhones(s).length > 0
+}
+
+/** Сгруппировать телефонию с несколькими городскими в один сворачиваемый блок */
+function groupAbonServices(list: AbonService[]) {
+  type Item =
+    | { kind: 'single'; service: AbonService }
+    | { kind: 'phones'; service: AbonService; phones: string[] }
+  const out: Item[] = []
+  let telBucket: AbonService[] = []
+
+  function flushTel() {
+    if (telBucket.length === 0) return
+    const phones: string[] = []
+    const seen = new Set<string>()
+    for (const s of telBucket) {
+      for (const p of serviceCityPhones(s)) {
+        const k = p.replace(/\D/g, '')
+        if (!k || seen.has(k)) continue
+        seen.add(k)
+        phones.push(p)
+      }
+    }
+    out.push({ kind: 'phones', service: telBucket[0], phones })
+    telBucket = []
+  }
+
+  for (const s of list) {
+    if (isTelephonyService(s)) {
+      telBucket.push(s)
+    } else {
+      flushTel()
+      out.push({ kind: 'single', service: s })
+    }
+  }
+  flushTel()
+  return out
+}
+
+function AbonServiceRow({
+  service,
+  onWifi,
+}: {
+  service: AbonService
+  onWifi: () => void
+}) {
+  const tone = serviceTone(service.type)
+  const isWifi = /wi/i.test(service.type)
 
   return (
-    <li className={`abon-service abon-${service.status ?? 'unknown'}`}>
-      <span className={`abon-dot abon-dot-${service.status ?? 'unknown'}`} aria-hidden />
-      <div className="abon-body">
-        <div className="abon-type-row">
-          <strong>{service.type}</strong>
-          {service.login && <span className="abon-po">{service.login}</span>}
-          {service.cityPhone && (
-            <a className="abon-po" href={cityTelHref(service.cityPhone)}>
-              {formatCityPhone(service.cityPhone)}
-            </a>
-          )}
-        </div>
-        <div className="abon-tariff">{service.tariff}</div>
-        {st && <div className="abon-status">{st}</div>}
+    <li className={`stitch-svc-card tone-${tone}`}>
+      <div className={`stitch-svc-ico tone-${tone}`} aria-hidden>
+        <ServiceGlyph type={service.type} />
+      </div>
+      <div className="stitch-svc-body">
+        <strong>{service.type}</strong>
+        {service.login && (
+          <div className="stitch-svc-meta">
+            Логин: <span className="mono">{service.login}</span>
+          </div>
+        )}
+        {service.tariff && <div className="stitch-svc-tariff">{service.tariff}</div>}
+      </div>
+      {isWifi ? (
+        <button type="button" className="stitch-svc-setup" onClick={onWifi}>
+          Настроить
+        </button>
+      ) : null}
+    </li>
+  )
+}
+
+/** Телефония: один номер или сворачиваемый список (юрлица) */
+function TelephonyServiceRow({
+  service,
+  phones,
+}: {
+  service: AbonService
+  phones: string[]
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const many = phones.length > 1
+  const visible = many && !expanded ? phones.slice(0, 1) : phones
+  const online = service.status === 'online'
+  const tone = 'green' as const
+
+  return (
+    <li className={`stitch-svc-card tone-${tone}`}>
+      <div className={`stitch-svc-ico tone-${tone}`} aria-hidden>
+        <ServiceGlyph type={service.type} />
+      </div>
+      <div className="stitch-svc-body">
+        <strong>
+          {service.type}
+          {many && <span className="stitch-svc-count"> · {phones.length}</span>}
+        </strong>
+        {service.tariff && <div className="stitch-svc-tariff">{service.tariff}</div>}
+        <ul className={`stitch-city-phones${expanded ? ' open' : ''}`}>
+          {visible.map((p) => (
+            <li key={p} className="stitch-city-phone">
+              <a href={cityTelHref(p)}>{formatCityPhoneLine(p)}</a>
+              {online && (
+                <span className="svc-live">
+                  <span className="svc-live-dot" /> Активен
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        {many && (
+          <button
+            type="button"
+            className="stitch-city-toggle"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+          >
+            {expanded ? 'Свернуть' : `Ещё ${phones.length - 1}`}
+          </button>
+        )}
       </div>
     </li>
   )
@@ -277,32 +415,48 @@ function isModemOnline(status: string) {
   return status.trim().toLowerCase() === 'в сети'
 }
 
-/** Вкладка носителя: модем/порты и параметры в одной карточке */
+function isLosStatus(status: string) {
+  const s = status.trim().toLowerCase()
+  return s === 'los' || s.includes('потеря')
+}
+
+/** Подпись статуса модема: «В сети» / «LOS» / исходный текст */
+function formatModemStatusLabel(status: string, online: boolean) {
+  if (online) return 'В сети'
+  if (isLosStatus(status)) return 'LOS'
+  if (status.trim().toLowerCase() === 'в сети') return 'Не в сети'
+  const t = status.trim()
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Не в сети'
+}
+
+/** Вкладка носителя — визуал Stitch Huawei / DSLAM */
 function CarrierTabBlock({
   title,
+  kind,
   modem,
   rows,
+  onWifi,
 }: {
   title: string
+  kind: 'dslam' | 'zte' | 'huawei'
   modem?: ModemPanel
   rows?: MetricRow[]
+  onWifi: () => void
 }) {
   const { showToast } = useDemo()
   const [ports, setPorts] = useState<ModemPort[]>(modem?.ports ?? [])
-  const [modemOn, setModemOn] = useState(() => (modem ? isModemOnline(modem.modemStatus) : false))
+  const [portOn, setPortOn] = useState(
+    () => !!modem?.portStatus && /\[?\s*on\s*\]?/i.test(modem.portStatus),
+  )
+  const modemOn = modem ? isModemOnline(modem.modemStatus) : false
 
   useEffect(() => {
     setPorts(modem?.ports ?? [])
-    setModemOn(modem ? isModemOnline(modem.modemStatus) : false)
+    setPortOn(!!modem?.portStatus && /\[?\s*on\s*\]?/i.test(modem.portStatus))
   }, [modem])
 
-  const modemLabel = modem
-    ? modemOn
-      ? 'в сети'
-      : modem.modemStatus === 'в сети'
-        ? 'не в сети'
-        : modem.modemStatus
-    : ''
+  const modemLabel = modem ? formatModemStatusLabel(modem.modemStatus, modemOn) : ''
+  const modemLos = !!modem && !modemOn && isLosStatus(modem.modemStatus)
 
   const togglePort = (name: string) => {
     setPorts((prev) =>
@@ -311,113 +465,139 @@ function CarrierTabBlock({
   }
 
   const hasMetrics = rows && rows.length > 0
+  const isDslam = kind === 'dslam'
 
   return (
-    <div className="detail-block carrier-tab">
-      <h3>{title}</h3>
-
+    <div className="detail-block carrier-tab stitch-carrier">
       {modem && (
-        <div className="modem-panel">
-          <div className="modem-card">
-            {modem.portStatus && (
-              <div className="modem-status-row">
-                <span className="modem-status-label">порт</span>
-                <strong className="modem-status-value">{modem.portStatus}</strong>
+        <>
+          {/* Состояние модема — отдельной строкой над блоком услуги/порта */}
+          <div className={`carrier-modem-bar${modemOn ? ' on' : modemLos ? ' los' : ' off'}`}>
+            <span className="carrier-modem-label">Модем</span>
+            <p
+              className={`carrier-modem-status${modemOn ? ' on' : modemLos ? ' los' : ' off'}`}
+            >
+              <span className="carrier-live-dot" />
+              {modemLabel}
+            </p>
+          </div>
+
+          <div className="carrier-hero">
+            <div className="carrier-hero-left">
+              <span className={`carrier-hero-ico${portOn ? ' on' : ''}`} aria-hidden>
+                <IconRouter size={22} />
+              </span>
+              <div>
+                <h3 className="carrier-hero-title">{title}</h3>
+                <p className={`carrier-hero-status${portOn ? ' on' : ' off'}`}>Порт</p>
               </div>
-            )}
-            <div className="modem-status-row">
-              <span className="modem-status-label">Модем:</span>
-              <strong className={`modem-status-value${modemOn ? ' on' : ' off'}`}>{modemLabel}</strong>
+            </div>
+            <div className="carrier-hero-right">
               <button
                 type="button"
-                className={`toggle${modemOn ? ' on' : ''}`}
-                aria-label={modemOn ? 'Модем в сети' : 'Модем не в сети'}
-                onClick={() => setModemOn((v) => !v)}
+                className={`toggle${portOn ? ' on' : ''}`}
+                aria-label={portOn ? 'Порт включён' : 'Порт выключен'}
+                onClick={() => setPortOn((v) => !v)}
               >
                 <span className="toggle-knob" />
               </button>
             </div>
           </div>
+        </>
+      )}
 
-          {(modem.profile || modem.speed) && (
-            <div className="modem-card modem-profile-card">
-              <div className="modem-profile-text">
-                {modem.speed && (
-                  <div className="modem-status-row">
-                    <span className="modem-status-label">Скор:</span>
-                    <strong className="modem-status-value">{modem.speed}</strong>
-                  </div>
-                )}
-                {modem.profile && (
-                  <div className="modem-status-row">
-                    <span className="modem-status-label">Проф:</span>
-                    <strong className="modem-status-value">{modem.profile}</strong>
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                className="btn btn-sm"
-                onClick={() => showToast('Профиль', 'Проверка профиля (демо)')}
-              >
-                профиль
-              </button>
+      {!modem && <h3>{title}</h3>}
+
+      {modem && (modem.profile || modem.speed) && (
+        <div className="carrier-plan">
+          {modem.profile && (
+            <div>
+              <p className="carrier-plan-label">Тарифный план / профиль</p>
+              <p className="carrier-plan-value">{modem.profile}</p>
             </div>
           )}
-
+          {modem.speed && <p className="carrier-plan-speed">{modem.speed}</p>}
           {ports.length > 0 && (
-            <>
-              <h4 className="carrier-section-title">Порты</h4>
-              <ul className="modem-port-list">
-                {ports.map((port, idx) => (
-                  <li key={port.name} className="modem-port-row">
-                    <div className="modem-port-main">
-                      {port.login != null && (
-                        <span className="modem-port-num" aria-hidden>
-                          {idx + 1}
-                        </span>
-                      )}
-                      <div className="modem-port-text">
-                        <strong>{port.name}</strong>
-                        {port.login && <span className="modem-port-login">{port.login}</span>}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className={`toggle${port.enabled ? ' on' : ''}`}
-                      aria-label={`${port.name}: ${port.enabled ? 'вкл' : 'выкл'}`}
-                      onClick={() => togglePort(port.name)}
-                    >
-                      <span className="toggle-knob" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <div className="carrier-port-chips">
+              {ports.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  className={`carrier-chip${p.enabled ? ' on' : ''}`}
+                  onClick={() => togglePort(p.name)}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
           )}
         </div>
       )}
 
-      {hasMetrics ? (
-        <>
-          {modem && <h4 className="carrier-section-title">Параметры</h4>}
-          <ul className="metric-list">
-            {rows!.map((row) => (
-              <li key={row.label} className={`metric-row metric-${row.icon}`}>
-                <span className="metric-icon" aria-hidden>
-                  <MetricGlyph name={row.icon} size={20} />
-                </span>
-                <div className="metric-text">
-                  <div className="metric-label">{row.label}</div>
-                  <div className="metric-value">{row.value}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        !modem && <p className="muted">Параметры носителя недоступны (демо)</p>
+      {hasMetrics && (
+        <ul className={`metric-list${isDslam ? ' metric-bento' : ' stitch-metric-list'}`}>
+          {rows!.map((row) => (
+            <li key={row.label} className={`metric-row metric-${row.icon}${isDslam ? ' bento' : ''}`}>
+              <span className="metric-icon" aria-hidden>
+                <MetricGlyph name={row.icon} size={20} />
+              </span>
+              <div className="metric-text">
+                <div className="metric-label">{row.label}</div>
+                <div className="metric-value">{row.value}</div>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
+
+      {!hasMetrics && !modem && <p className="muted">Параметры носителя недоступны (демо)</p>}
+
+      <div className="carrier-actions">
+        <button type="button" className="carrier-action-card" onClick={onWifi}>
+          <IconRouter size={22} />
+          <span>
+            Настройки
+            <br />
+            Wi‑Fi
+          </span>
+        </button>
+        <button
+          type="button"
+          className="carrier-action-card"
+          onClick={() => showToast('Перезагрузка порта (демо)')}
+        >
+          <IconModem size={22} />
+          <span>
+            Перезагрузить
+            <br />
+            порт
+          </span>
+        </button>
+        <button
+          type="button"
+          className="carrier-action-card"
+          onClick={() => showToast('Перезагрузка модема (демо)')}
+        >
+          <IconModem size={22} />
+          <span>
+            Перезагрузить
+            <br />
+            модем
+          </span>
+        </button>
+        <button
+          type="button"
+          className="carrier-action-card"
+          onClick={() => showToast('Сессия разорвана (демо)')}
+        >
+          <IconCloudOff size={22} />
+          <span>
+            Разорвать
+            <br />
+            сессию
+          </span>
+        </button>
+      </div>
     </div>
   )
 }
@@ -452,13 +632,17 @@ function MetricsBlock({
   )
 }
 
-/** История измерений вторички — карточки как в ATM */
+/** История измерений вторички — Stitch bento + карточки ATM */
 function SecondaryMeasures({ task }: { task: DemoTask }) {
+  const { showToast } = useDemo()
   const [chartOpen, setChartOpen] = useState(false)
   const pon = task.ponMeasures ?? []
   const dslam = task.dslamMeasures ?? []
   const newestFirstPon = useMemo(() => [...pon].reverse(), [pon])
   const newestFirstDslam = useMemo(() => [...dslam].reverse(), [dslam])
+  const latestPon = newestFirstPon[0]
+  const latestDslam = newestFirstDslam[0]
+  const hasBento = !!(latestPon || latestDslam)
 
   if (pon.length === 0 && dslam.length === 0) {
     return (
@@ -469,40 +653,143 @@ function SecondaryMeasures({ task }: { task: DemoTask }) {
   }
 
   return (
-    <div className="detail-block">
-      {pon.length > 1 && (
-        <button type="button" className="chart-bar" onClick={() => setChartOpen(true)}>
-          <span className="chart-bar-icon">
-            <IconChart size={22} />
-          </span>
-          <span className="chart-bar-title">График измерений</span>
-          <span className="chart-bar-btn" aria-hidden>
-            <IconChart size={18} />
-          </span>
+    <div className="detail-block stitch-secondary">
+      {latestPon && (() => {
+        const isLos = latestPon.onuRx != null && latestPon.onuRx <= -26
+        return (
+          <div className={`bento-grid${isLos ? ' is-los' : ''}`}>
+            <div className="bento-tile">
+              <div className="bento-tile-top">
+                <MetricGlyph name="attenuation" size={20} />
+                <span className={`bento-ok${isLos ? ' los' : ''}`}>{isLos ? 'LOS' : 'OK'}</span>
+              </div>
+              <p className="bento-label">Затухание</p>
+              {/* При LOS нет связи со станцией — параметры ONU недоступны */}
+              <p className={`bento-value${isLos ? ' na' : ''}`}>
+                {isLos ? 'Нет связи' : formatAttenuationBento(latestPon.attenuation)}
+              </p>
+            </div>
+            {latestPon.voltage && (
+              <div className="bento-tile">
+                <div className="bento-tile-top">
+                  <MetricGlyph name="volt" size={20} />
+                  <span className={`bento-ok${isLos ? ' los' : ''}`}>{isLos ? 'N/A' : 'Norm'}</span>
+                </div>
+                <p className="bento-label">Напряжение</p>
+                <p className={`bento-value${isLos ? ' na' : ''}`}>
+                  {isLos ? 'Нет связи' : latestPon.voltage}
+                </p>
+              </div>
+            )}
+            {latestPon.laserCurrent && (
+              <div className="bento-tile">
+                <div className="bento-tile-top">
+                  <MetricGlyph name="laser" size={20} />
+                  {isLos && <span className="bento-ok los">N/A</span>}
+                </div>
+                <p className="bento-label">Ток лазера</p>
+                <p className={`bento-value${isLos ? ' na' : ''}`}>
+                  {isLos ? 'Нет связи' : latestPon.laserCurrent}
+                </p>
+              </div>
+            )}
+            {latestPon.temperature && (
+              <div className="bento-tile">
+                <div className="bento-tile-top">
+                  <MetricGlyph name="thermo" size={20} />
+                  {isLos && <span className="bento-ok los">N/A</span>}
+                </div>
+                <p className="bento-label">Температура</p>
+                <p className={`bento-value${isLos ? ' na' : ''}`}>
+                  {isLos ? 'Нет связи' : latestPon.temperature}
+                </p>
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
+      {!latestPon && latestDslam && (
+        <div className="bento-grid">
+          <div className="bento-tile">
+            <div className="bento-tile-top">
+              <MetricGlyph name="signal" size={20} />
+              <span className="bento-ok">OK</span>
+            </div>
+            <p className="bento-label">SNR</p>
+            <p className="bento-value">{latestDslam.snr}</p>
+          </div>
+          <div className="bento-tile">
+            <div className="bento-tile-top">
+              <MetricGlyph name="attenuation" size={20} />
+            </div>
+            <p className="bento-label">Затухание</p>
+            <p className="bento-value">{latestDslam.attenuation}</p>
+          </div>
+          <div className="bento-tile">
+            <div className="bento-tile-top">
+              <MetricGlyph name="speed" size={20} />
+            </div>
+            <p className="bento-label">Скорость</p>
+            <p className="bento-value">{latestDslam.speed}</p>
+          </div>
+        </div>
+      )}
+
+      {hasBento && (
+        <button
+          type="button"
+          className="btn btn-pill secondary-measure-btn"
+          onClick={() => showToast('Измерения обновлены (демо)')}
+        >
+          Обновить
         </button>
       )}
 
+      {pon.length > 1 && (
+        <div className="signal-dynamics">
+          <div className="section-head">
+            <h3>Динамика сигнала</h3>
+            <span className="muted">История</span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-block btn-pill signal-chart-btn"
+            onClick={() => setChartOpen(true)}
+          >
+            <IconChart size={18} />
+            График
+          </button>
+        </div>
+      )}
+
       {newestFirstPon.length > 0 && (
-        <ul className="measure-cards">
-          {newestFirstPon.map((m) => (
-            <li key={m.at} className="measure-card">
-              <PonMeasureCard m={m} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <h4 className="carrier-section-title">История PON</h4>
+          <ul className="measure-cards">
+            {newestFirstPon.map((m) => (
+              <li key={m.at} className="measure-card">
+                <PonMeasureCard m={m} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       {newestFirstDslam.length > 0 && (
-        <ul className="measure-cards">
-          {newestFirstDslam.map((m) => (
-            <li key={m.at} className="measure-card">
-              <DslamMeasureCard m={m} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <h4 className="carrier-section-title">История DSLAM</h4>
+          <ul className="measure-cards">
+            {newestFirstDslam.map((m) => (
+              <li key={m.at} className="measure-card">
+                <DslamMeasureCard m={m} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
-      <Modal open={chartOpen} onClose={() => setChartOpen(false)} title="График вторички">
+      <Modal open={chartOpen} onClose={() => setChartOpen(false)} title="График вторички" showClose={false}>
         <p className="muted" style={{ marginTop: 0 }}>
           ONU Rx
         </p>
@@ -521,6 +808,14 @@ function formatMeasureAt(at: string) {
   const m = at.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/)
   if (!m) return at
   return `${m[3]}.${m[2]}.${m[1]}, ${m[4]}:${m[5]}`
+}
+
+/** Затухание для плитки: «−15.10 / −16.20 дБ» */
+function formatAttenuationBento(raw: string) {
+  const { up, down } = parseUpDown(raw)
+  if (up === '—' && down === '—') return raw
+  const tidy = (v: string) => v.replace(/^-/, '−')
+  return `${tidy(up)} / ${tidy(down)} дБ`
 }
 
 function parseUpDown(raw: string): { up: string; down: string } {
@@ -551,10 +846,13 @@ function MeasurePairRow({
   icon,
   label,
   raw,
+  unavailable,
 }: {
   icon: MetricIcon
   label: string
   raw: string
+  /** LOS / нет связи со станцией — значение не показывать */
+  unavailable?: boolean
 }) {
   const { up, down } = parseUpDown(raw)
   return (
@@ -563,20 +861,24 @@ function MeasurePairRow({
         <MetricGlyph name={icon} size={16} />
       </span>
       <span className="measure-pair-label">{label}</span>
-      <div className="measure-pair-vals">
-        <span className="measure-chip measure-chip-up">
-          <span className="measure-chip-dir" aria-hidden>
-            ↑
+      {unavailable ? (
+        <span className="measure-pair-na">Нет связи</span>
+      ) : (
+        <div className="measure-pair-vals">
+          <span className="measure-chip measure-chip-up">
+            <span className="measure-chip-dir" aria-hidden>
+              ↑
+            </span>
+            {up}
           </span>
-          {up}
-        </span>
-        <span className="measure-chip measure-chip-down">
-          <span className="measure-chip-dir" aria-hidden>
-            ↓
+          <span className="measure-chip measure-chip-down">
+            <span className="measure-chip-dir" aria-hidden>
+              ↓
+            </span>
+            {down}
           </span>
-          {down}
-        </span>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -593,15 +895,17 @@ function MeasureEnvTile({
   label,
   value,
   tone,
+  unavailable,
 }: {
   icon: MetricIcon
   label: string
   value: string
   tone: 'volt' | 'amp' | 'temp'
+  unavailable?: boolean
 }) {
-  const { num, unit } = splitMeasureValue(value)
+  const { num, unit } = unavailable ? { num: value, unit: '' } : splitMeasureValue(value)
   return (
-    <div className={`measure-env measure-env-${tone}`}>
+    <div className={`measure-env measure-env-${tone}${unavailable ? ' na' : ''}`}>
       <span className="measure-env-ico" aria-hidden>
         <MetricGlyph name={icon} size={13} />
       </span>
@@ -617,25 +921,51 @@ function MeasureEnvTile({
 }
 
 function PonMeasureCard({ m }: { m: PonMeasure }) {
+  const isLos = m.onuRx != null && m.onuRx <= -26
   return (
     <>
       <MeasureHead at={m.at} />
       <div className="measure-body">
-        <MeasurePairRow icon="router" label="OLT" raw={m.oltUpDown} />
-        <MeasurePairRow icon="modem" label="ONU" raw={m.onuUpDown} />
-        <MeasurePairRow icon="attenuation" label="Затухание" raw={m.attenuation} />
-        {m.delta && <MeasurePairRow icon="delta" label="Отклонение" raw={m.delta} />}
+        <MeasurePairRow icon="router" label="OLT" raw={m.oltUpDown} unavailable={isLos} />
+        <MeasurePairRow icon="modem" label="ONU" raw={m.onuUpDown} unavailable={isLos} />
+        <MeasurePairRow
+          icon="attenuation"
+          label="Затухание"
+          raw={m.attenuation}
+          unavailable={isLos}
+        />
+        {m.delta && (
+          <MeasurePairRow icon="delta" label="Отклонение" raw={m.delta} unavailable={isLos} />
+        )}
       </div>
       {(m.voltage || m.laserCurrent || m.temperature) && (
         <div className="measure-foot">
           {m.voltage && (
-            <MeasureEnvTile icon="volt" label="Напряжение" value={m.voltage} tone="volt" />
+            <MeasureEnvTile
+              icon="volt"
+              label="Напряжение"
+              value={isLos ? 'Нет связи' : m.voltage}
+              tone="volt"
+              unavailable={isLos}
+            />
           )}
           {m.laserCurrent && (
-            <MeasureEnvTile icon="laser" label="Ток лазера" value={m.laserCurrent} tone="amp" />
+            <MeasureEnvTile
+              icon="laser"
+              label="Ток лазера"
+              value={isLos ? 'Нет связи' : m.laserCurrent}
+              tone="amp"
+              unavailable={isLos}
+            />
           )}
           {m.temperature && (
-            <MeasureEnvTile icon="thermo" label="Температура" value={m.temperature} tone="temp" />
+            <MeasureEnvTile
+              icon="thermo"
+              label="Температура"
+              value={isLos ? 'Нет связи' : m.temperature}
+              tone="temp"
+              unavailable={isLos}
+            />
           )}
         </div>
       )}

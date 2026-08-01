@@ -1,37 +1,32 @@
-# ATM БТК — PWA демо (конкурс)
+# ATM БТК — PWA демо
 
-Демонстрационный клиент выездных бригад: **только mock-данные**, без API Белтелеком.
+Демонстрационный клиент выездных бригад: **только mock-данные**, без API Белтелеком.  
+Визуал BTK + Stitch, логика из ATM.
+
+**Pages:** https://zeka3535.github.io/atm-btk/#/login
 
 ## Локально
 
 ```bash
-cd atm-pwa
 npm install
 npm run dev       # http://localhost:5173/#/login
 npm run build
-npm run preview   # проверка как в production
+npm run preview
 ```
 
 Логин: любой (например `demo`), пароль не проверяется.
 
 ## GitHub Pages
 
-1. Залейте репозиторий на GitHub (корень монорепо `ATM` или только `atm-pwa`).
-2. Settings → Pages → Source: **GitHub Actions**.
-3. Workflow: [`.github/workflows/deploy-pwa.yml`](../.github/workflows/deploy-pwa.yml).
-4. Если site = `https://USER.github.io/REPO/`, задайте repository Variable `VITE_BASE` = `/REPO/` (со слэшами). Для `./` + HashRouter часто достаточно дефолта.
-5. После push откройте URL Pages, например `https://USER.github.io/REPO/#/login`.
+После push в `main` / `design-system` workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) собирает и публикует сайт.
 
-## Сценарий демо (паритет с ATM БТК)
+- Source: **GitHub Actions**
+- Для project site обычно хватает `base: './'` + HashRouter
+- При необходимости задайте Variable `VITE_BASE` = `/atm-btk/`
 
-1. Вход → «Войти» (любой логин).
-2. Входящие: toolbar, фильтр извещений, бейджи Новая / Отчёт / Отписано / Отчёт послан.
-3. Карточка: дата, период, ФИО, адрес, damage, tel-ссылки; карты (модалка Яндекс/Google); звонок / модалка контактов.
-4. Отчёт: черновик, счётчик 506, зона аварии, «Послать» → snackbar «Отчёт послан»; на закрытой — нельзя.
-5. Детали: Сервисы / носитель / История / Первичка / Вторичка; Wi‑Fi; график измерений.
-6. Закрытые: `isClosed` или отчёт за сегодня.
-7. Настройки: офлайн-баннер, уведомления (in-app + системные), звук/вибрация, выход.
-8. Остров нижней навигации на всех экранах после входа (под модалками).
+## Сценарий демо
 
-Stitch UI — следующий этап (`design/STITCH-PROMPTS.md`).
-
+1. Вход → любой логин.
+2. Входящие / закрытые, карточки, отчёт, карты, контакты, Wi‑Fi.
+3. Детали: сервисы, носитель, история, вторичка.
+4. Настройки: офлайн, уведомления, выход.

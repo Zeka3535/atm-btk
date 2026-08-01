@@ -1,4 +1,4 @@
-import { IconLogout, IconNotify } from '../components/icons'
+import { IconCloudOff, IconNotify } from '../components/icons'
 import { BackToolbar } from '../components/NavChrome'
 import { useDemo } from '../context/DemoContext'
 
@@ -41,27 +41,25 @@ export function SettingsPage() {
     setNotifyVibrate,
     logout,
     demoNotifyNewTask,
-    version,
   } = useDemo()
 
   return (
     <div className="page settings-page">
       <BackToolbar title="Назад" />
 
-      <section className="card settings-account">
-        <div className="settings-account-text">
-          <div className="muted">Учётная запись</div>
+      <section className="card settings-group">
+        <h2 className="settings-group-title">Учётная запись</h2>
+        <div className="settings-account">
           <div className="settings-account-name">{accountName}</div>
         </div>
-        <button type="button" className="btn-logout" onClick={logout} title="Выход">
-          <IconLogout size={20} />
-          <span>Выход</span>
+        <button type="button" className="btn-logout btn-logout-block" onClick={logout}>
+          Выйти
         </button>
       </section>
 
       <section className="card settings-group">
         <h2 className="settings-group-title">
-          <IconNotify size={18} />
+          <IconNotify size={16} />
           Уведомления
         </h2>
         <div className="switch-row">
@@ -105,17 +103,20 @@ export function SettingsPage() {
       </section>
 
       <section className="card settings-group">
-        <h2 className="settings-group-title">Демо</h2>
+        <h2 className="settings-group-title">
+          <IconCloudOff size={16} />
+          Демо-режим
+        </h2>
         <div className="switch-row">
           <div>
-            <strong>Режим без сети</strong>
-            <div className="muted">Офлайн-баннер и кэш списка</div>
+            <strong>Офлайн режим</strong>
+            <div className="muted">
+              Офлайн-баннер и кэш списка. Данные синхронизируются позже.
+            </div>
           </div>
-          <Toggle label="Режим без сети" checked={offline} onChange={setOffline} />
+          <Toggle label="Офлайн режим" checked={offline} onChange={setOffline} />
         </div>
       </section>
-
-      <p className="settings-version">{version}</p>
     </div>
   )
 }
