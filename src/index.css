@@ -1911,15 +1911,25 @@ button {
   width: 100%;
   max-width: none;
   margin: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.32);
+  /* Доп. блюр там, где backdrop-filter живой; в макете/части WebView не работает */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding: 0;
   box-sizing: border-box;
+}
+
+/*
+ * Надёжное размытие: backdrop-filter ломается у родителя с transform/isolation
+ * (макет Samsung) и в части Android WebView — поэтому блюрим сам контент под оверлеем.
+ */
+.device-screen:has(> .modal-backdrop) > :not(.modal-backdrop),
+body:has(> .modal-backdrop) #root {
+  filter: blur(8px);
 }
 
 .modal-card {
