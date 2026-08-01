@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { ContactsModal } from '../components/ContactsModal'
+import { LanDevicesModal } from '../components/LanDevicesModal'
 import { MapsModal } from '../components/MapsModal'
 import {
   IconChart,
@@ -9,16 +10,19 @@ import {
   IconRouter,
   IconTv,
   IconUser,
+  IconWifi,
   MetricGlyph,
 } from '../components/icons'
 import { BackToolbar } from '../components/NavChrome'
 import { ReportModal } from '../components/ReportModal'
 import { TabsScroll } from '../components/TabsScroll'
 import { TaskCard } from '../components/TaskCard'
+import { TrafficStatsModal } from '../components/TrafficStatsModal'
 import { WifiSettingsModal } from '../components/WifiSettingsModal'
 import { LinkedText, Modal } from '../components/UiKit'
 import { useDemo } from '../context/DemoContext'
 import type {
+  AbonEquipment,
   AbonService,
   CallContact,
   DemoTask,
@@ -71,6 +75,8 @@ export function TaskDetailPage() {
   const [tab, setTab] = useState<ServiceTabId>('services')
   const [reportOpen, setReportOpen] = useState(false)
   const [wifiOpen, setWifiOpen] = useState(false)
+  const [devicesOpen, setDevicesOpen] = useState(false)
+  const [trafficOpen, setTrafficOpen] = useState(false)
   const [contacts, setContacts] = useState<CallContact[] | null>(null)
   const [mapAddr, setMapAddr] = useState<string | null>(null)
 
@@ -132,11 +138,25 @@ export function TaskDetailPage() {
       )}
 
       <div className="detail-tab-body">
-        <TabBody task={task} tab={tab} onWifi={() => setWifiOpen(true)} />
+        <TabBody
+          task={task}
+          tab={tab}
+          onWifi={() => setWifiOpen(true)}
+          onDevices={() => setDevicesOpen(true)}
+          onTraffic={() => setTrafficOpen(true)}
+        />
       </div>
 
       <ReportModal taskId={reportOpen ? task.id : null} onClose={() => setReportOpen(false)} />
       <WifiSettingsModal taskId={wifiOpen ? task.id : null} onClose={() => setWifiOpen(false)} />
+      <LanDevicesModal
+        devices={devicesOpen ? (task.lanDevices ?? []) : null}
+        onClose={() => setDevicesOpen(false)}
+      />
+      <TrafficStatsModal
+        traffic={trafficOpen ? (task.traffic ?? null) : null}
+        onClose={() => setTrafficOpen(false)}
+      />
       <ContactsModal contacts={contacts} onClose={() => setContacts(null)} />
       <MapsModal address={mapAddr} onClose={() => setMapAddr(null)} />
     </div>
@@ -147,10 +167,14 @@ function TabBody({
   task,
   tab,
   onWifi,
+  onDevices,
+  onTraffic,
 }: {
   task: DemoTask
   tab: ServiceTabId
   onWifi: () => void
+  onDevices: () => void
+  onTraffic: () => void
 }) {
   if (tab === 'services') {
     const list = task.abonServices ?? []
@@ -159,8 +183,15 @@ function TabBody({
     const linesOnly = (task.serviceLines ?? []).filter((line) => !/wi/i.test(line))
     const showWifi =
       !!task.wifi || !!wifiSvc || (task.services?.includes('wifi') ?? false)
+    const equipment = task.equipment ?? []
+    const lanDevices = task.lanDevices
+    const showEquipment =
+      equipment.length > 0 || lanDevices != null || !!task.traffic
     const emptyServices =
-      servicesOnly.length === 0 && linesOnly.length === 0 && !showWifi
+      servicesOnly.length === 0 &&
+      linesOnly.length === 0 &&
+      !showWifi &&
+      !showEquipment
 
     return (
       <div className="detail-block stitch-services">
@@ -209,6 +240,45 @@ function TabBody({
                 onWifi={onWifi}
               />
             </ul>
+          </>
+        )}
+
+        {showEquipment && (
+          <>
+            <div className="section-head wifi-status-head">
+              <h3>Оборудование</h3>
+            </div>
+            {equipment.length > 0 && (
+              <ul className="abon-service-list stitch-svc-list">
+                {equipment.map((item) => (
+                  <EquipmentRow key={`${item.kind}-${item.serial}`} item={item} />
+                ))}
+              </ul>
+            )}
+            <div className="eq-actions">
+              {lanDevices != null && (
+                <button type="button" className="eq-action-btn" onClick={onDevices}>
+                  <span className="eq-action-ico" aria-hidden>
+                    <IconWifi size={20} />
+                  </span>
+                  <span className="eq-action-text">
+                    <strong>Устройства в сети</strong>
+                    <span>{lanDevices.length} подкл.</span>
+                  </span>
+                </button>
+              )}
+              {task.traffic && (
+                <button type="button" className="eq-action-btn" onClick={onTraffic}>
+                  <span className="eq-action-ico" aria-hidden>
+                    <IconChart size={20} />
+                  </span>
+                  <span className="eq-action-text">
+                    <strong>Статистика трафика</strong>
+                    <span>{task.traffic.periodLabel}</span>
+                  </span>
+                </button>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -268,6 +338,7 @@ function TabBody({
         kind={tab}
         modem={task.modem}
         rows={task.carrierMetrics}
+        equipment={task.equipment}
         onWifi={onWifi}
       />
     )
@@ -397,6 +468,35 @@ function WifiStatusRow({
   )
 }
 
+function EquipmentRow({ item }: { item: AbonEquipment }) {
+  const tone = item.kind === 'stb' ? 'orange' : 'cyan'
+  const title =
+    item.kind === 'modem' && item.model
+      ? `Модем ${item.model}`
+      : item.model
+        ? `${item.title} · ${item.model}`
+        : item.title
+  return (
+    <li className={`stitch-svc-card stitch-eq-card tone-${tone}`}>
+      <div className={`stitch-svc-ico tone-${tone}`} aria-hidden>
+        {item.kind === 'stb' ? <IconTv size={22} /> : <IconModem size={22} />}
+      </div>
+      <div className="stitch-svc-body">
+        <strong>{title}</strong>
+        <div className="stitch-eq-meta">
+          <span>
+            S/N: <span className="mono">{item.serial}</span>
+          </span>
+          <span>
+            MAC: <span className="mono">{item.mac}</span>
+          </span>
+          <span>Выдан: {item.issuedAt}</span>
+        </div>
+      </div>
+    </li>
+  )
+}
+
 /** Телефония: один номер или сворачиваемый список (юрлица) */
 function TelephonyServiceRow({
   service,
@@ -473,12 +573,14 @@ function CarrierTabBlock({
   kind,
   modem,
   rows,
+  equipment,
   onWifi,
 }: {
   title: string
   kind: 'dslam' | 'zte' | 'huawei'
   modem?: ModemPanel
   rows?: MetricRow[]
+  equipment?: AbonEquipment[]
   onWifi: () => void
 }) {
   const { showToast } = useDemo()
@@ -502,8 +604,17 @@ function CarrierTabBlock({
     )
   }
 
-  const hasMetrics = rows && rows.length > 0
   const isDslam = kind === 'dslam'
+  const metricRows = (rows ?? []).filter((row) => {
+    if (row.icon === 'router' || row.icon === 'calendar') return false
+    if (row.icon === 'modem' && /серий/i.test(row.label)) return false
+    if (!isDslam && (row.icon === 'laser' || row.icon === 'thermo' || row.icon === 'attenuation')) {
+      return false
+    }
+    return true
+  })
+  const hasMetrics = metricRows.length > 0
+  const modemEq = equipment?.find((e) => e.kind === 'modem')
 
   return (
     <div className="detail-block carrier-tab stitch-carrier">
@@ -572,9 +683,15 @@ function CarrierTabBlock({
         </div>
       )}
 
+      {modemEq && (
+        <ul className="abon-service-list stitch-svc-list carrier-eq-list">
+          <EquipmentRow item={modemEq} />
+        </ul>
+      )}
+
       {hasMetrics && (
         <ul className={`metric-list${isDslam ? ' metric-bento' : ' stitch-metric-list'}`}>
-          {rows!.map((row) => (
+          {metricRows.map((row) => (
             <li key={row.label} className={`metric-row metric-${row.icon}${isDslam ? ' bento' : ''}`}>
               <span className="metric-icon" aria-hidden>
                 <MetricGlyph name={row.icon} size={20} />
@@ -588,7 +705,9 @@ function CarrierTabBlock({
         </ul>
       )}
 
-      {!hasMetrics && !modem && <p className="muted">Параметры носителя недоступны (демо)</p>}
+      {!hasMetrics && !modem && !modemEq && (
+        <p className="muted">Параметры носителя недоступны (демо)</p>
+      )}
 
       <div className="carrier-actions">
         <button type="button" className="carrier-action-card" onClick={onWifi}>
@@ -671,6 +790,16 @@ function MetricsBlock({
 }
 
 /** История измерений вторички — Stitch bento + карточки ATM */
+function numFromMetric(raw?: string) {
+  if (!raw) return null
+  const m = raw.replace(',', '.').match(/-?\d+(?:\.\d+)?/)
+  return m ? Number(m[0]) : null
+}
+
+function toneClass(tone: 'ok' | 'warn' | 'los') {
+  return tone === 'ok' ? '' : ` ${tone}`
+}
+
 function SecondaryMeasures({ task }: { task: DemoTask }) {
   const { showToast } = useDemo()
   const [chartOpen, setChartOpen] = useState(false)
@@ -694,12 +823,22 @@ function SecondaryMeasures({ task }: { task: DemoTask }) {
     <div className="detail-block stitch-secondary">
       {latestPon && (() => {
         const isLos = latestPon.onuRx != null && latestPon.onuRx <= -26
+        const attenuationTone: 'ok' | 'warn' | 'los' =
+          isLos ? 'los' : latestPon.onuRx <= -24 ? 'warn' : 'ok'
+        const voltageValue = numFromMetric(latestPon.voltage)
+        const voltageTone: 'ok' | 'warn' | 'los' = isLos
+          ? 'los'
+          : voltageValue != null && (voltageValue < 32.6 || voltageValue > 33.8)
+            ? 'warn'
+            : 'ok'
         return (
           <div className={`bento-grid${isLos ? ' is-los' : ''}`}>
             <div className="bento-tile">
               <div className="bento-tile-top">
                 <MetricGlyph name="attenuation" size={20} />
-                <span className={`bento-ok${isLos ? ' los' : ''}`}>{isLos ? 'LOS' : 'OK'}</span>
+                <span className={`bento-ok${toneClass(attenuationTone)}`}>
+                  {attenuationTone === 'los' ? 'LOS' : attenuationTone === 'warn' ? 'WARN' : 'OK'}
+                </span>
               </div>
               <p className="bento-label">Затухание</p>
               {/* При LOS нет связи со станцией — параметры ONU недоступны */}
@@ -711,7 +850,9 @@ function SecondaryMeasures({ task }: { task: DemoTask }) {
               <div className="bento-tile">
                 <div className="bento-tile-top">
                   <MetricGlyph name="volt" size={20} />
-                  <span className={`bento-ok${isLos ? ' los' : ''}`}>{isLos ? 'N/A' : 'Norm'}</span>
+                  <span className={`bento-ok${toneClass(voltageTone)}`}>
+                    {voltageTone === 'los' ? 'N/A' : voltageTone === 'warn' ? 'WARN' : 'NORM'}
+                  </span>
                 </div>
                 <p className="bento-label">Напряжение</p>
                 <p className={`bento-value${isLos ? ' na' : ''}`}>

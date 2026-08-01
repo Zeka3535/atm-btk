@@ -106,6 +106,55 @@ export interface WifiConfig {
   band?: string
 }
 
+/** Оборудование на абоненте (модем / приставка) */
+export type AbonEquipmentKind = 'modem' | 'stb'
+
+export interface AbonEquipment {
+  kind: AbonEquipmentKind
+  /** Модем Huawei / Приставка B900 */
+  title: string
+  model?: string
+  serial: string
+  mac: string
+  /** Дата выдачи, ДД.ММ.ГГГГ */
+  issuedAt: string
+}
+
+/** Устройство в LAN модема */
+export interface LanDevice {
+  name: string
+  mac: string
+  ip?: string
+  online?: boolean
+}
+
+export interface TrafficPoint {
+  label: string
+  down: number
+  up: number
+}
+
+export interface TrafficSessionStats {
+  totalHours: number
+  averageMinutes: number
+  longestMinutes: number
+  sessionsCount: number
+}
+
+/** Статистика трафика абонента (демо) */
+export interface AbonTraffic {
+  /** Подпись периода, напр. «Июль 2026» */
+  periodLabel: string
+  downloadGb: number
+  uploadGb: number
+  /** Суточные точки для мини-графика */
+  days?: TrafficPoint[]
+  /** Помесячные точки для сводки */
+  months?: TrafficPoint[]
+  /** Сводка по длительности сессий */
+  sessions?: TrafficSessionStats
+}
+
 /** Снимок вторички (PON) — как карточка в ATM */
 export interface PonMeasure {
   at: string
@@ -152,6 +201,12 @@ export interface DemoTask {
   abonServices?: AbonService[]
   /** Текущие настройки Wi‑Fi роутера (демо) */
   wifi?: WifiConfig
+  /** Оборудование, числящееся на абоненте */
+  equipment?: AbonEquipment[]
+  /** Устройства, подключённые к модему */
+  lanDevices?: LanDevice[]
+  /** Статистика трафика (демо) */
+  traffic?: AbonTraffic
   carrier: CarrierKind
   /** Карточки параметров носителя / первички */
   carrierMetrics?: MetricRow[]
