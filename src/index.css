@@ -480,14 +480,16 @@ body {
   overscroll-behavior-x: none;
 }
 
-/* Системный pull-to-refresh браузера (настройка в Settings) */
-html.block-system-refresh,
-html.block-system-refresh body {
+/*
+ * Системный pull-to-refresh браузера (настройка в Settings).
+ * Только на html — на body/app-shell none ломает прокрутку в части WebView.
+ */
+html.block-system-refresh {
   overscroll-behavior-y: none;
 }
 
 html.block-system-refresh .app-shell {
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: contain;
 }
 
 .app-shell,

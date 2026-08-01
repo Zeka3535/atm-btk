@@ -2,20 +2,24 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 const THRESHOLD = 68
 const MAX_PULL = 112
+/** Порог, после которого жест считается PTR, а не скроллом */
+const ENGAGE = 12
 
-/** Скролл окна или .app-shell (в iframe-макете крутится shell) */
+function isScrollableY(el: HTMLElement): boolean {
+  const oy = getComputedStyle(el).overflowY
+  if (oy !== 'auto' && oy !== 'scroll' && oy !== 'overlay') return false
+  return el.scrollHeight > el.clientHeight + 1
+}
+
+/** Актуальная позиция вертикального скролла (shell / документ) */
 function getScrollTop(): number {
   const shell = document.querySelector('.app-shell') as HTMLElement | null
-  if (shell) {
-    const oy = getComputedStyle(shell).overflowY
-    if (
-      (oy === 'auto' || oy === 'scroll' || oy === 'overlay') &&
-      shell.scrollHeight > shell.clientHeight + 1
-    ) {
-      return shell.scrollTop
-    }
-  }
-  return window.scrollY || document.documentElement.scrollTop || 0
+  if (shell && isScrollableY(shell)) return shell.scrollTop
+
+  const se = document.scrollingElement as HTMLElement | null
+  if (se) return se.scrollTop
+
+  return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
 }
 
 export function PullToRefresh({
@@ -30,7 +34,9 @@ export function PullToRefresh({
   const [pull, setPull] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
   const startY = useRef(0)
-  const pulling = useRef(false)
+  const startX = useRef(0)
+  const tracking = useRef(false)
+  const engaged = useRef(false)
   const pullRef = useRef(0)
   const refreshingRef = useRef(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -53,35 +59,63 @@ export function PullToRefresh({
     }
   }, [onRefresh])
 
-  const beginPull = (clientY: number) => {
+  const resetGesture = () => {
+    tracking.current = false
+    engaged.current = false
+    if (pullRef.current !== 0 && !refreshingRef.current) setPull(0)
+  }
+
+  const beginTrack = (clientX: number, clientY: number) => {
     if (disabled || refreshingRef.current) return
     if (getScrollTop() > 1) return
+    startX.current = clientX
     startY.current = clientY
-    pulling.current = true
+    tracking.current = true
+    engaged.current = false
   }
 
-  const movePull = (clientY: number, e?: Event) => {
-    if (!pulling.current || disabled || refreshingRef.current) return
-    if (getScrollTop() > 1 && pullRef.current === 0) {
-      pulling.current = false
+  const moveTrack = (clientX: number, clientY: number, e?: Event) => {
+    if (!tracking.current || disabled || refreshingRef.current) return
+
+    /* Ушли со верха списка — отдаём жест скроллу */
+    if (getScrollTop() > 1) {
+      resetGesture()
       return
     }
+
+    const dx = clientX - startX.current
     const dy = clientY - startY.current
+
+    if (!engaged.current) {
+      if (dy <= 0) return
+      /* Горизонталь / слабый жест — не перехватываем скролл */
+      if (Math.abs(dx) > Math.abs(dy) || dy < ENGAGE) return
+      engaged.current = true
+    }
+
     if (dy <= 0) {
-      if (pullRef.current !== 0) setPull(0)
+      resetGesture()
       return
     }
-    const next = Math.min(MAX_PULL, dy * 0.42)
+
+    const next = Math.min(MAX_PULL, (dy - ENGAGE) * 0.45 + ENGAGE * 0.2)
     setPull(next)
-    /* Блокируем системный жест, пока тянем свой PTR */
-    if (next > 8 && e) e.preventDefault()
+    /*
+     * preventDefault только когда PTR уже «взял» жест.
+     * Если системный refresh уже блокирован CSS — всё равно нужно,
+     * чтобы страница не «съедала» тягу.
+     */
+    if (e && next > 4) e.preventDefault()
   }
 
-  const endPull = () => {
-    if (!pulling.current) return
-    pulling.current = false
+  const endTrack = () => {
+    if (!tracking.current) return
+    const wasEngaged = engaged.current
+    const dist = pullRef.current
+    tracking.current = false
+    engaged.current = false
     if (refreshingRef.current) return
-    if (pullRef.current >= THRESHOLD) {
+    if (wasEngaged && dist >= THRESHOLD) {
       void runRefresh()
     } else {
       setPull(0)
@@ -92,23 +126,29 @@ export function PullToRefresh({
     const el = rootRef.current
     if (!el) return
 
-    const onTouchStart = (e: TouchEvent) => beginPull(e.touches[0].clientY)
-    const onTouchMove = (e: TouchEvent) => movePull(e.touches[0].clientY, e)
-    const onTouchEnd = () => endPull()
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      beginTrack(t.clientX, t.clientY)
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0]
+      moveTrack(t.clientX, t.clientY, e)
+    }
+    const onTouchEnd = () => endTrack()
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return
       if (e.button !== 0) return
-      beginPull(e.clientY)
+      beginTrack(e.clientX, e.clientY)
     }
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return
-      if (!pulling.current) return
-      movePull(e.clientY)
+      if (!tracking.current) return
+      moveTrack(e.clientX, e.clientY)
     }
     const onPointerUp = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return
-      endPull()
+      endTrack()
     }
 
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -130,7 +170,6 @@ export function PullToRefresh({
       window.removeEventListener('pointerup', onPointerUp)
       window.removeEventListener('pointercancel', onPointerUp)
     }
-    // begin/move/end замыкают актуальные refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled, runRefresh])
 
