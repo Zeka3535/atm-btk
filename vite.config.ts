@@ -64,6 +64,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cacheId: 'atm-btk-0.3.0',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,

@@ -65,6 +65,22 @@ export interface AbonService {
   cityPhones?: string[]
 }
 
+/** Сумма баланса для отображения, напр. «12,45 BYN» */
+export function formatServiceBalance(balance: number): string {
+  const formatted = Math.abs(balance).toLocaleString('ru-BY', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return `${balance < 0 ? '−' : ''}${formatted} BYN`
+}
+
+/** Юрлицо по ФИО/названию абонента */
+export function isLegalEntitySubscriber(subscriber: string): boolean {
+  return /\b(ООО|ОАО|ЗАО|ОДО|УП|ЧУП|ИП|ГУ|РУП|КПУП|СООО|СП|ТОО)\b/i.test(
+    subscriber.trim(),
+  )
+}
+
 /** Все городские номера услуги (cityPhone + cityPhones) */
 export function serviceCityPhones(s: AbonService): string[] {
   const raw = [...(s.cityPhone ? [s.cityPhone] : []), ...(s.cityPhones ?? [])]
@@ -199,6 +215,8 @@ export interface DemoTask {
   serviceLines?: string[]
   /** Детальные услуги абонента (тариф, городской и т.п.) */
   abonServices?: AbonService[]
+  /** Общий баланс лицевого счёта в BYN (не показывать юрлицам) */
+  balance?: number
   /** Текущие настройки Wi‑Fi роутера (демо) */
   wifi?: WifiConfig
   /** Оборудование, числящееся на абоненте */

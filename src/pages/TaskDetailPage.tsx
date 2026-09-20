@@ -38,6 +38,8 @@ import type {
 import {
   cityTelHref,
   formatCityPhoneLine,
+  formatServiceBalance,
+  isLegalEntitySubscriber,
   screensForCarrier,
   serviceCityPhones,
 } from '../types'
@@ -193,12 +195,22 @@ function TabBody({
       linesOnly.length === 0 &&
       !showWifi &&
       !showEquipment
+    const showBalance =
+      task.balance != null && !isLegalEntitySubscriber(task.subscriber)
+    const balanceDebt = showBalance && task.balance! < 0
 
     return (
       <div className="detail-block stitch-services">
         <div className="section-head">
           <h3>Подключенные услуги</h3>
         </div>
+
+        {showBalance && (
+          <div className={`stitch-svc-balance-row${balanceDebt ? ' debt' : ''}`}>
+            <span>Баланс</span>
+            <strong>{formatServiceBalance(task.balance!)}</strong>
+          </div>
+        )}
 
         {emptyServices && <p className="muted">Услуги не привязаны к заявке</p>}
 

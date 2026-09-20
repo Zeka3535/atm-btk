@@ -38,6 +38,7 @@ function mergeTasksFromServer(local: DemoTask[], server: DemoTask[]): DemoTask[]
       history: cur.history,
       wifi: cur.wifi ?? next.wifi,
       abonServices: cur.abonServices ?? next.abonServices,
+      balance: cur.balance ?? next.balance,
       equipment: cur.equipment ?? next.equipment,
       lanDevices: cur.lanDevices ?? next.lanDevices,
       traffic: cur.traffic ?? next.traffic,

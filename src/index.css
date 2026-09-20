@@ -4167,6 +4167,31 @@ html.modal-open .device-screen {
   font-weight: 600;
 }
 
+.stitch-svc-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f5f3f7;
+  color: var(--btk-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.stitch-svc-balance-row strong {
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.stitch-svc-balance-row.debt,
+.stitch-svc-balance-row.debt strong {
+  color: #dc2626;
+}
+
 .stitch-svc-count {
   color: var(--btk-muted);
   font-weight: 700;
